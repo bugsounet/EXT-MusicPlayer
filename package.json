@@ -1,0 +1,27 @@
+{
+  "name": "EXT-MusicPlayer",
+  "version": "0.0.1",
+  "rev": "develop",
+  "description": "An embedded Music Player on MagicMirror.",
+  "main": "EXT-MusicPlayer.js",
+  "scripts": {
+    "preinstall": "installer/preinstall.sh",
+    "postinstall": "installer/postinstall.sh"
+  },
+  "keywords": [
+    "magic mirror",
+    "module",
+    "volume",
+    "warning"
+  ],
+  "author": "bugsounet",
+  "license": "MIT",
+  "bugs": {
+    "url": "http://forum.bugsounet.fr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bugsounet/EXT-MusicPlayer"
+  },
+  "homepage": "http://wiki.bugsounet.fr/en/EXT-MusicPlayer"
+}

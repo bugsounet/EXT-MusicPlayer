@@ -154,7 +154,7 @@ class Music {
     const logo = this.getHTMLElementWithID('div', "EXT_MUSIC_LOGO")
     const text = document.createElement("span")
     text.className = "text"
-    text.textContent = "Google Assistant Music Player"
+    text.textContent = "Music Player"
     logo.appendChild(text)
 
     return logo
@@ -204,7 +204,7 @@ class Music {
     }
     const cover_img = document.getElementById("EXT_MUSIC_COVER_IMAGE")
     var img_url
-    if (playbackItem.cover) img_url = "/modules/EXT-MusicPlayer/tmp/" + playbackItem.cover +"?seed="+ playbackItem.seed
+    if (playbackItem.cover) img_url = "/modules/EXT-MusicPlayer/tmp/Music/" + playbackItem.cover +"?seed="+ playbackItem.seed
     else img_url = "/modules/EXT-MusicPlayer/resources/music.jpg" +"?seed="+ playbackItem.seed
     if (cover_img.src.indexOf(img_url) == -1) {
       const back = document.getElementById("EXT_MUSIC_BACKGROUND")

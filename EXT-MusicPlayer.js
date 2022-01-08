@@ -57,6 +57,7 @@ Module.register("EXT-MusicPlayer", {
     switch(noti) {
       case "DOM_OBJECTS_CREATED":
         this.sendSocketNotification("INIT", this.config)
+        this.sendNotification("EXT_HELLO", this.name)
         break
     }
   },

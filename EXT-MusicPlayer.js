@@ -13,11 +13,12 @@ logMUSIC = (...args) => { /* do nothing */ }
 
 Module.register("EXT-MusicPlayer", {
   defaults: {
-    debug: true,
+    debug: false,
     useUSB: false,
     musicPath: "/home/pi/Music",
     checkSubDirectory: false,
     autoStart: true, // for testing ... don't forget to make in `false` for release !
+    autoStartTimeout: 10000,
     minVolume: 30,
     maxVolume: 100,
     NPMCheck: {
@@ -29,8 +30,13 @@ Module.register("EXT-MusicPlayer", {
 
   start: function () {
     this.config.useMusic = true
+    this.music= {
+      currentVolume: 0,
+      targetVolume: this.config.maxVolume,
+      forceVolume: false
+    }
     if (this.config.debug) logMUSIC = (...args) => { console.log("[MUSIC]", ...args) }
-    this.Music = new Music(this.config, (noti,params) => console.log("[MUSIC]", noti, params), this.config.debug)
+    this.Music = new Music(this.config, (noti,params) => console.log("[MUSIC NOTI]", noti, params), this.config.debug)
     this.initializeMusicVolumeVLC()
     this.musicConnected= false
   },
@@ -59,6 +65,24 @@ Module.register("EXT-MusicPlayer", {
         this.sendSocketNotification("INIT", this.config)
         this.sendNotification("EXT_HELLO", this.name)
         break
+      case "EXT_STOP":
+      case "EXT_MUSIC-STOP":
+        this.MusicCommand("STOP")
+        break
+      case "EXT_MUSIC-VOLUME_MIN":
+        if (!this.musicConnected) return
+        if (this.music.currentVolume <= this.config.minVolume) return
+        this.music.targetVolume = this.music.currentVolume
+        this.MusicCommand("VOLUME", this.config.minVolume, true)
+        break
+      case "EXT_MUSIC-VOLUME_MAX":
+        if (!this.musicConnected) return
+        if (this.music.targetVolume <= this.config.minVolume) return
+        this.MusicCommand("VOLUME", this.music.targetVolume)
+        break
+      case "EXT_MUSIC-VOLUME_SET":
+        this.MusicCommand("VOLUME", payload)
+        break
     }
   },
 
@@ -66,11 +90,18 @@ Module.register("EXT-MusicPlayer", {
     switch(noti) {
       /** Music Player **/
       case "Music_Player":
+        if (payload.volume) this.music.currentVolume = payload.volume
         if (payload.connected) {
-          this.musicConnected = true
+          if (!this.musicConnected) {
+            this.musicConnected = true
+            this.sendNotification("EXT_MUSIC-CONNECTED")
+          }
           if (!payload.pause) this.Music.setPlay()
         } else {
-          this.musicConnected = false
+          if (this.musicConnected) {
+            this.musicConnected = false
+            this.sendNotification("EXT_MUSIC-DISCONNECTED")
+          }
         }
         this.Music.updateSongInfo(payload)
         break
@@ -89,11 +120,11 @@ Module.register("EXT-MusicPlayer", {
       if (typeof valueMin === "number" && valueMin >= 0 && valueMin <= 100) this.config.minVolume = ((valueMin * 255) / 100).toFixed(0)
       else {
         console.error("[MUSIC] config.music.minVolume error! Corrected with 30")
-        this.config.minVolume = 70
+        this.config.minVolume = 30
       }
     } catch (e) {
       console.error("[MUSIC] config.music.minVolume error!", e)
-      this.config.minVolume = 70
+      this.config.minVolume = 30
     }
     try {
       let valueMax = null
@@ -198,7 +229,7 @@ Module.register("EXT-MusicPlayer", {
         this.sendSocketNotification("MUSIC_PREVIOUS")
         break
       case "VOLUME":
-        if (!realValue) {
+        if (!realValue) { // convert to cvlc value
           var volumeValue = payload
           if (isNaN(volumeValue)) return console.log("ERROR MUSIC VOLUME", "Must be a number ! [0-100]", volumeValue)
           if (payload > 100) volumeValue = 100
@@ -206,7 +237,8 @@ Module.register("EXT-MusicPlayer", {
           volumeValue= parseInt(((volumeValue*256)/100).toFixed(0))
         }
         this.config.maxVolume = realValue ? payload: volumeValue
-        this.sendSocketNotification("MUSIC_VOLUME_TARGET", realValue ? payload: volumeValue)
+        this.sendSocketNotification("MUSIC_VOLUME_TARGET", this.config.maxVolume)
+        this.music.forceVolume = false
         break
       case "REBUILD":
         this.sendSocketNotification("MUSIC_REBUILD")

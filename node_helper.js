@@ -6,7 +6,7 @@ var log = (...args) => { /* do nothing */ }
 
 module.exports = NodeHelper.create({
   start: function () {
-  this.Lib= {}
+    this.Lib= {}
   },
 
   socketNotificationReceived: function (noti, payload) {
@@ -68,7 +68,8 @@ module.exports = NodeHelper.create({
         }
       }
       this.music = new this.Lib.MusicPlayer(this.config, this.config.debug, callbacks)
-      this.music.start()
+      if (this.config.autoStart) setTimeout(() => this.music.start(),this.config.autoStartTimeout)
+      else this.music.start()
     } catch (e) { console.log("[MUSIC]", e) } // testing
   },
 

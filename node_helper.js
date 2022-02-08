@@ -63,13 +63,12 @@ module.exports = NodeHelper.create({
     try {
       var callbacks= {
         "sendSocketNotification": (noti, params) => {
-          log(noti,params)
+          if (this.config.verbose) log(noti,params)
           this.sendSocketNotification(noti, params)
         }
       }
       this.music = new this.Lib.MusicPlayer(this.config, this.config.debug, callbacks)
-      if (this.config.autoStart) setTimeout(() => this.music.start(),this.config.autoStartTimeout)
-      else this.music.start()
+      this.music.start()
     } catch (e) { console.log("[MUSIC]", e) } // testing
   },
 

@@ -7,18 +7,13 @@
 
 logMUSIC = (...args) => { /* do nothing */ }
 
-// @todo:
-//  * define incoming noti for control with `MusicCommand()`
-//  * define output noti for inform EXT-Gateway
-
 Module.register("EXT-MusicPlayer", {
   defaults: {
     debug: false,
+    verbose: false,
     useUSB: false,
     musicPath: "/home/pi/Music",
     checkSubDirectory: false,
-    autoStart: true, // for testing ... don't forget to make in `false` for release !
-    autoStartTimeout: 10000,
     minVolume: 30,
     maxVolume: 100,
     NPMCheck: {
@@ -30,28 +25,36 @@ Module.register("EXT-MusicPlayer", {
 
   start: function () {
     this.config.useMusic = true
-    this.music= {
-      currentVolume: 0,
-      targetVolume: this.config.maxVolume,
-      forceVolume: false
-    }
     if (this.config.debug) logMUSIC = (...args) => { console.log("[MUSIC]", ...args) }
-    this.Music = new Music(this.config, (noti,params) => console.log("[MUSIC NOTI]", noti, params), this.config.debug)
     this.initializeMusicVolumeVLC()
-    this.musicConnected= false
+    this.music= {
+      connected: false,
+      currentVolume: 0,
+      minVolume: this.config.minVolume,
+      minValue: this.convertPercentToValue(this.config.minVolume),
+      maxVolume: this.config.maxVolume,
+      targetVolume: this.config.maxVolume,
+      targetValue: this.convertPercentToValue(this.config.maxVolume),
+      assistantSpeak: false
+    }
+    this.config.minVolume = this.music.minValue
+    this.config.maxVolume = this.music.targetValue
+    this.Music = new Music(this.config, (noti,params) => console.log("[MUSIC NOTI]", noti, params), this.config.debug)
   },
 
   getScripts: function() {
     return [
       "/modules/EXT-MusicPlayer/components/musicplayer.js",
-      "https://cdn.materialdesignicons.com/5.2.45/css/materialdesignicons.min.css",
+      "https://code.iconify.design/1/1.0.6/iconify.min.js"
     ]
   },
 
   getStyles: function () {
     return [
       "EXT-MusicPlayer.css",
-      "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      "https://cdn.materialdesignicons.com/5.2.45/css/materialdesignicons.min.css",
+      "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css",
+      "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     ]
   },
 
@@ -65,23 +68,59 @@ Module.register("EXT-MusicPlayer", {
         this.sendSocketNotification("INIT", this.config)
         this.sendNotification("EXT_HELLO", this.name)
         break
+      case "ASSISTANT_LISTEN":
+      case "ASSISTANT_THINK":
+      case "ASSISTANT_REPLY":
+      case "ASSISTANT_CONTINUE":
+      case "ASSISTANT_CONFIRMATION":
+      case "ASSISTANT_ERROR":
+        this.music.assistantSpeak= true
+        break
+      case "ASSISTANT_HOOK":
+      case "ASSISTANT_STANDBY":
+        this.music.assistantSpeak= false
+        break
       case "EXT_STOP":
       case "EXT_MUSIC-STOP":
         this.MusicCommand("STOP")
         break
       case "EXT_MUSIC-VOLUME_MIN":
-        if (!this.musicConnected) return
-        if (this.music.currentVolume <= this.config.minVolume) return
+        if (!this.music.connected) return
+        if (this.music.currentVolume <= this.music.minVolume) return
         this.music.targetVolume = this.music.currentVolume
-        this.MusicCommand("VOLUME", this.config.minVolume, true)
+        this.music.targetValue = this.convertPercentToValue(this.music.targetVolume)
+        this.MusicCommand("VOLUME", this.music.minValue)
         break
       case "EXT_MUSIC-VOLUME_MAX":
-        if (!this.musicConnected) return
-        if (this.music.targetVolume <= this.config.minVolume) return
-        this.MusicCommand("VOLUME", this.music.targetVolume)
+        if (!this.music.connected) return
+        if (this.music.targetVolume <= this.music.minVolume) return
+        this.MusicCommand("VOLUME", this.music.targetValue)
         break
       case "EXT_MUSIC-VOLUME_SET":
-        this.MusicCommand("VOLUME", payload)
+        if (isNaN(payload)) return console.log("ERROR MUSIC VOLUME", "Must be a number ! [0-100]", payload)
+        if (payload > 100) payload = 100
+        if (payload < 0) payload = 0
+        this.music.targetValue = this.convertPercentToValue(payload)
+        this.music.targetVolume = payload
+        if (!this.music.assistantSpeak) this.MusicCommand("VOLUME", this.music.targetValue)
+        break
+      case "EXT_MUSIC-NEXT":
+        this.MusicCommand("NEXT")
+        break
+      case "EXT_MUSIC-PREVIOUS":
+        this.MusicCommand("PREVIOUS")
+        break
+      case "EXT_MUSIC-REBUILD":
+        this.MusicCommand("REBUILD")
+        break
+      case "EXT_MUSIC-SWITCH":
+        this.MusicCommand("SWITCH")
+        break
+      case "EXT_MUSIC-PLAY":
+        this.MusicCommand("PLAY")
+        break
+      case "EXT_MUSIC-PAUSE":
+        this.MusicCommand("PAUSE")
         break
     }
   },
@@ -92,14 +131,14 @@ Module.register("EXT-MusicPlayer", {
       case "Music_Player":
         if (payload.volume) this.music.currentVolume = payload.volume
         if (payload.connected) {
-          if (!this.musicConnected) {
-            this.musicConnected = true
+          if (!this.music.connected) {
+            this.music.connected = true
             this.sendNotification("EXT_MUSIC-CONNECTED")
           }
           if (!payload.pause) this.Music.setPlay()
         } else {
-          if (this.musicConnected) {
-            this.musicConnected = false
+          if (this.music.connected) {
+            this.music.connected = false
             this.sendNotification("EXT_MUSIC-DISCONNECTED")
           }
         }
@@ -117,26 +156,24 @@ Module.register("EXT-MusicPlayer", {
     try {
       let valueMin = null
       valueMin = parseInt(this.config.minVolume)
-      if (typeof valueMin === "number" && valueMin >= 0 && valueMin <= 100) this.config.minVolume = ((valueMin * 255) / 100).toFixed(0)
-      else {
-        console.error("[MUSIC] config.music.minVolume error! Corrected with 30")
+      if (typeof valueMin === "number" && valueMin < 0 && valueMin > 100) {
+        console.error("[MUSIC] config.minVolume error! Corrected with 30")
         this.config.minVolume = 30
       }
     } catch (e) {
-      console.error("[MUSIC] config.music.minVolume error!", e)
+      console.error("[MUSIC] config.minVolume error!", e)
       this.config.minVolume = 30
     }
     try {
       let valueMax = null
       valueMax = parseInt(this.config.maxVolume)
-      if (typeof valueMax === "number" && valueMax >= 0 && valueMax <= 100) this.config.maxVolume = ((valueMax * 255) / 100).toFixed(0)
-      else {
-        console.error("[MUSIC] config.music.maxVolume error! Corrected with 100")
-        this.config.maxVolume = 255
+      if (typeof valueMax === "number" && valueMax < 0 && valueMax > 100) {
+        console.error("[MUSIC] config.maxVolume error! Corrected with 100")
+        this.config.maxVolume = 100
       }
     } catch (e) {
-      console.error("[MUSIC] config.music.maxVolume error!", e)
-      this.config.maxVolume = 255
+      console.error("[MUSIC] config.maxVolume error!", e)
+      this.config.maxVolume = 100
     }
     console.log("[MUSIC] VLC Volume Control initialized!")
   },
@@ -189,7 +226,7 @@ Module.register("EXT-MusicPlayer", {
           /* 100 -> 256
            * args[1] -> y
            */
-          this.MusicCommand("VOLUME", parseInt(((args[1]*256)/100).toFixed(0)), true)
+          this.MusicCommand("VOLUME", this.convertPercentToValue(args[1]))
         } else handler.reply("TEXT", "Define volume [0-100]")
       }
       if (args[0] == "switch") {
@@ -229,16 +266,7 @@ Module.register("EXT-MusicPlayer", {
         this.sendSocketNotification("MUSIC_PREVIOUS")
         break
       case "VOLUME":
-        if (!realValue) { // convert to cvlc value
-          var volumeValue = payload
-          if (isNaN(volumeValue)) return console.log("ERROR MUSIC VOLUME", "Must be a number ! [0-100]", volumeValue)
-          if (payload > 100) volumeValue = 100
-          if (payload < 0) volumeValue = 0
-          volumeValue= parseInt(((volumeValue*256)/100).toFixed(0))
-        }
-        this.config.maxVolume = realValue ? payload: volumeValue
-        this.sendSocketNotification("MUSIC_VOLUME_TARGET", this.config.maxVolume)
-        this.music.forceVolume = false
+        this.sendSocketNotification("MUSIC_VOLUME_TARGET", payload)
         break
       case "REBUILD":
         this.sendSocketNotification("MUSIC_REBUILD")
@@ -247,5 +275,10 @@ Module.register("EXT-MusicPlayer", {
         this.sendSocketNotification("MUSIC_SWITCH")
         break
     }
+  },
+
+  /** Convert percent to cvlc value **/
+  convertPercentToValue: function(percent) {
+    return parseInt(((percent*256)/100).toFixed(0))
   }
 })

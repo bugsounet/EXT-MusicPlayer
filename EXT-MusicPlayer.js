@@ -39,7 +39,7 @@ Module.register("EXT-MusicPlayer", {
     }
     this.config.minVolume = this.music.minValue
     this.config.maxVolume = this.music.targetValue
-    this.Music = new Music(this.config, (noti,params) => console.log("[MUSIC NOTI]", noti, params), this.config.debug)
+    this.Music = new Music(this.config)
   },
 
   getScripts: function() {

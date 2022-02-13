@@ -1,11 +1,10 @@
-/* Music library rev: 21/09/21 */
+/* Music library rev: 22/02/13 */
 /* From ... Spotify Display ... */
 
 class Music {
-  constructor (Config, callbacks, debug) {
+  constructor (Config) {
     this.config = Config
-    this.debug = debug
-    this.MusicStatus = callbacks.MusicStatus
+    this.debug = Config.debug
     this.currentPlayback = null
     this.connected = false
     this.timer = null

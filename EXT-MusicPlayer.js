@@ -1,11 +1,9 @@
 /**
  ** Module : EXT-MusicPlayer
  ** @bugsounet
- ** ©01-2022
- ** support: http://forum.bugsounet.fr
+ ** ©03-2022
+ ** support: https://forum.bugsounet.fr
  **/
-
-logMUSIC = (...args) => { /* do nothing */ }
 
 Module.register("EXT-MusicPlayer", {
   defaults: {
@@ -14,18 +12,13 @@ Module.register("EXT-MusicPlayer", {
     useUSB: false,
     musicPath: "/home/pi/Music",
     checkSubDirectory: false,
+    autoStart: false,
     minVolume: 30,
-    maxVolume: 100,
-    NPMCheck: {
-      useChecker: true,
-      delay: 10 * 60 * 1000,
-      useAlert: true
-    }
+    maxVolume: 100
   },
 
   start: function () {
     this.config.useMusic = true
-    if (this.config.debug) logMUSIC = (...args) => { console.log("[MUSIC]", ...args) }
     this.initializeMusicVolumeVLC()
     this.music= {
       connected: false,
@@ -62,11 +55,14 @@ Module.register("EXT-MusicPlayer", {
     return this.Music.prepare()
   },
 
-  notificationReceived: function(noti, payload) {
+  notificationReceived: function(noti, payload, sender) {
     switch(noti) {
       case "DOM_OBJECTS_CREATED":
         this.sendSocketNotification("INIT", this.config)
         this.sendNotification("EXT_HELLO", this.name)
+        break
+      case "GAv4_READY":
+        if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_HELLO", this.name)
         break
       case "ASSISTANT_LISTEN":
       case "ASSISTANT_THINK":
@@ -146,6 +142,13 @@ Module.register("EXT-MusicPlayer", {
         break
       case "Music_Player_PAUSE":
         this.Music.setPause()
+        break
+      case "WARNING":
+        this.sendNotification("EXT_ALERT", {
+          type: "warning",
+          message: "Error When Loading: " + payload.library + ". Try to solve it with `npm run rebuild` in EXT-MusicPlayer directory",
+          timer: 10000
+        })
         break
     }
   },

@@ -77,7 +77,7 @@ module.exports = NodeHelper.create({
   loadBugsounetLibrary: function() {
     let libraries= [
       // { "library to load" : [ "store library name", "path to check", needed without EXT ?] }
-      { "@bugsounet/cvlcmusicplayer": ["MusicPlayer", "useMusic" ] },
+      { "./lib/playerLib.js": ["MusicPlayer", "useMusic" ] },
     ]
     let errors = 0
     return new Promise(resolve => {

@@ -1,7 +1,7 @@
 /**
  ** Module : EXT-MusicPlayer
  ** @bugsounet
- ** ©03-2022
+ ** ©03-2023
  ** support: https://forum.bugsounet.fr
  **/
 
@@ -32,6 +32,7 @@ Module.register("EXT-MusicPlayer", {
     }
     this.config.minVolume = this.music.minValue
     this.config.maxVolume = this.music.targetValue
+    this.ready = false
     this.Music = new Music(this.config)
   },
 
@@ -56,14 +57,16 @@ Module.register("EXT-MusicPlayer", {
   },
 
   notificationReceived: function(noti, payload, sender) {
-    switch(noti) {
-      case "DOM_OBJECTS_CREATED":
+    if (noti == "GW_READY") {
+      if (sender.name == "Gateway") {
         this.sendSocketNotification("INIT", this.config)
+        this.ready = true
         this.sendNotification("EXT_HELLO", this.name)
-        break
-      case "GAv5_READY":
-        if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_HELLO", this.name)
-        break
+      }
+    }
+    if (!this.ready) return
+
+    switch(noti) {
       case "ASSISTANT_LISTEN":
       case "ASSISTANT_THINK":
       case "ASSISTANT_REPLY":
@@ -149,6 +152,7 @@ Module.register("EXT-MusicPlayer", {
           message: "Error When Loading: " + payload.library + ". Try to solve it with `npm run rebuild` in EXT-MusicPlayer directory",
           timer: 10000
         })
+        this.ready = false
         break
     }
   },
@@ -184,7 +188,7 @@ Module.register("EXT-MusicPlayer", {
   /****************************/
   /*** TelegramBot Commands ***/
   /****************************/
-  getCommands: function(commander) {
+  EXT_TELBOTCommands: function(commander) {
     commander.add({
       command: "music",
       description: "Music player commands",

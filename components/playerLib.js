@@ -1,5 +1,5 @@
 const mm = require('music-metadata')
-const USB = require('usb')
+const USB = require('usb').usb
 const Drives = require('drivelist')
 const cvlc = require("@bugsounet/cvlc")
 const path = require("path")

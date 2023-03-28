@@ -1,14 +1,12 @@
-# EXT-MusicPlayer - Extented for `MMM-GoogleAssistant` v5.x
-
-EXT-MusicPlayer is a module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project by [Michael Teeuw](https://github.com/MichMich).
+# EXT-MusicPlayer - Extented for `MMM-GoogleAssistant`
 
 It allow to play music files from your rpi or USB key<br>
 
-This module is an Extented for `MMM-GoogleAssistant` v5.x, you can naturally use it as a simple module !<br>
-It can be controled with `MMM-TelegramBot`, some notifications or with your voice
+This module is an Extented for `MMM-GoogleAssistant`<br>
+It can be controled with `EXT-TelegramBot`, some notifications or with your voice
 
 ## Screenshot
-![](https://raw.githubusercontent.com/bugsounet/EXT-MusicPlayer/dev/components/Screenshot.png)
+![](https://raw.githubusercontent.com/bugsounet/EXT-MusicPlayer/dev/resources/Screenshot.png)
 
 ## Installation / update / configuration
 

@@ -20,12 +20,20 @@ Installer_dir="$(Installer_get_current_dir)"
 cd "$Installer_dir"
 source utils.sh
 
+Installer_info "Minify Main code"
+node minify.js
+Installer_success "Done"
+echo
+
 # Go back to module root
 cd ..
 
-echo
-Installer_info "Rebuilding MagicMirror..."
-MagicMirror-rebuild
+Installer_info "Rebuild MagicMirror..."
+MagicMirror-rebuild 2>/dev/null || {
+  Installer_error "Rebuild Failed"
+  exit 255
+}
+Installer_success "Done"
 echo
 
 # module name

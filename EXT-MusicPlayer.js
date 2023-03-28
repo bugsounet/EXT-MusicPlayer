@@ -37,14 +37,16 @@ Module.register("EXT-MusicPlayer", {
   },
 
   getScripts: function() {
-    return [ "/modules/EXT-MusicPlayer/components/musicplayer.js" ]
+    return [
+      "/modules/EXT-MusicPlayer/components/musicplayer.js",
+      "https://code.iconify.design/1/1.0.6/iconify.min.js"
+    ]
   },
 
   getStyles: function () {
     return [
       "EXT-MusicPlayer.css",
       "https://cdn.materialdesignicons.com/5.2.45/css/materialdesignicons.min.css",
-      "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css",
       "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     ]
   },

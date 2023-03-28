@@ -37,10 +37,7 @@ Module.register("EXT-MusicPlayer", {
   },
 
   getScripts: function() {
-    return [
-      "/modules/EXT-MusicPlayer/components/musicplayer.js",
-      "https://code.iconify.design/1/1.0.6/iconify.min.js"
-    ]
+    return [ "/modules/EXT-MusicPlayer/components/musicplayer.js" ]
   },
 
   getStyles: function () {

@@ -193,9 +193,7 @@ class Music {
         sDom.classList.remove("animate__flipInX")
         sDom.classList.add("animate__flipOutX")
         sDom.addEventListener('animationend', (e) => {
-          if (e.animationName == "flipOutX" && e.path[0].id == "EXT_MUSIC") {
-            sDom.classList.add("inactive")
-          }
+          if (e.animationName == "flipOutX") sDom.classList.add("inactive")
           e.stopPropagation()
         }, {once: true})
       }

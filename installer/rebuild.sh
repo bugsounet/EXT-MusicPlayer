@@ -34,9 +34,11 @@ Installer_success "Done."
 
 echo
 Installer_info "Upgrading EXT-MusicPlayer..."
-git reset --hard HEAD
-git pull
-Installer_success "Done."
+(git reset --hard && git pull) || {
+  Installer_error "Update Failed!"
+  exit 255
+}
+Installer_success "Done"
 
 Installer_info "Reinstalling EXT-MusicPlayer..."
 npm install

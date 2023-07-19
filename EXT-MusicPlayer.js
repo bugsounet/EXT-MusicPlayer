@@ -1,7 +1,6 @@
 /**
  ** Module : EXT-MusicPlayer
  ** @bugsounet
- ** ©03-2023
  ** support: https://forum.bugsounet.fr
  **/
 
@@ -10,6 +9,7 @@ Module.register("EXT-MusicPlayer", {
     debug: false,
     verbose: false,
     useUSB: false,
+    random: false,
     musicPath: "/home/pi/Music",
     checkSubDirectory: false,
     autoStart: false,

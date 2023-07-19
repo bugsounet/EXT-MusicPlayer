@@ -1,4 +1,3 @@
-//const mm = require('music-metadata')
 const USB = require('usb').usb
 const Drives = require('drivelist')
 const cvlc = require("@bugsounet/cvlc")
@@ -28,17 +27,11 @@ class PLAYER {
     this.config = Object.assign(this.default, this.config)
     this.sendSocketNotification = callback.sendSocketNotification
     if (debug == true) log = _log
-    this.init()
+    this.meta = null
     this.forceStop = false
     this.EndWithNoCb = false
     this.AutoDetectUSB= false
     this.FileExtensions = ['mp3','flac','wav', 'ogg', 'opus', 'm4a']
-    if (this.config.useUSB) this.AutoDetectUSB= true
-    this.USBAutoDetect()
-  }
-
-  async init () {
-    // Init or Re-init all value :)
     this.Music = null
     this.MusicPlayerStatus = {
       connected: false,
@@ -58,7 +51,31 @@ class PLAYER {
     }
     this.MusicInterval = null
     this.audioList= []
-    this.meta = await this.loadLib("music-metadata")
+    if (this.config.useUSB) this.AutoDetectUSB= true
+    this.USBAutoDetect()
+  }
+
+  async init () {
+    // Re-init all value :)
+    this.Music = null
+    this.MusicPlayerStatus = {
+      connected: false,
+      pause: false,
+      current: 0,
+      duration: 0,
+      file: null,
+      title: "",
+      artist: "",
+      volume: 0,
+      date: 0,
+      seed: 0,
+      cover: null,
+      id: null,
+      idMax: 0,
+      format: null
+    }
+    this.MusicInterval = null
+    this.audioList= []
   }
 
   async start () {
@@ -130,6 +147,7 @@ class PLAYER {
         }
       }
     })
+    this.MusicPlayerStatus.idMax = this.audioList.length-1
   }
 
   checkValidFileExtension (filename) {
@@ -149,15 +167,16 @@ class PLAYER {
       this.MusicPlayerStatus.idMax = this.audioList.length-1
     }
 
-    if (this.MusicPlayerStatus.id == null) {
-      this.MusicPlayerStatus.id = 0
-      this.MusicPlayer()
-    }
-    else {
-      this.MusicPlayerStatus.id++
-      if (this.MusicPlayerStatus.id > this.audioList.length-1) this.MusicPlayerStatus.id = null
-      else this.MusicPlayer()
-    }
+    if (!this.config.random) {
+      if (this.MusicPlayerStatus.id == null) {
+        this.MusicPlayerStatus.id = 0
+        this.MusicPlayer()
+      } else {
+        this.MusicPlayerStatus.id++
+        if (this.MusicPlayerStatus.id > this.MusicPlayerStatus.idMax) this.MusicPlayerStatus.id = null
+        else this.MusicPlayer()
+      }
+    } else this.MusicPlayer()
   }
 
   /** Music Player **/
@@ -167,6 +186,13 @@ class PLAYER {
       return
     }
     try {
+      if (!this.meta) this.meta = await this.loadLib("music-metadata")
+      if (this.config.random) {
+        let randomId = await this.getRandomInt(this.audioList.length)
+        if (randomId == this.MusicPlayerStatus.id) return this.MusicPlayer () // same song ?
+        this.MusicPlayerStatus.id = randomId
+      }
+      console.log("Info:", this.audioList[this.MusicPlayerStatus.id])
       const metadata = await this.meta.parseFile(this.audioList[this.MusicPlayerStatus.id])
 
       log("Infos from file:", this.audioList[this.MusicPlayerStatus.id])
@@ -175,7 +201,7 @@ class PLAYER {
       log("Release Date:", metadata.common.date ? metadata.common.date : "unknow")
       log("Duration:", parseInt((metadata.format.duration).toFixed(0)) + " secs")
       log("Format:", metadata.format.codec)
-      log("PlayList Id:", this.MusicPlayerStatus.id, "/" + this.MusicPlayerStatus.idMax)
+      log("PlayList Id:", this.MusicPlayerStatus.id+"/"+this.MusicPlayerStatus.idMax)
 
       // make structure
       this.MusicPlayerStatus.connected= false
@@ -201,7 +227,7 @@ class PLAYER {
         log("No Cover Found")
         this.MusicPlayerStatus.cover = null
       }
-      var cvlcArgs = ["--play-and-exit"]
+      var cvlcArgs = []//"--play-and-exit"]
       this.Music = new cvlc(cvlcArgs)
       this.Music.play(
         this.MusicPlayerStatus.file,
@@ -287,10 +313,12 @@ class PLAYER {
       log("Play")
     }
     else {
-      this.MusicPlayerStatus.id--
-      if (this.MusicPlayerStatus.id < 0) this.MusicPlayerStatus.id = 0
-      this.MusicPlayList()
-      log("Play Last Title")
+      if (!this.config.random) {
+        this.MusicPlayerStatus.id--
+        if (this.MusicPlayerStatus.id < 0) this.MusicPlayerStatus.id = 0
+        this.MusicPlayList()
+        log("Play Last Title")
+      } else this.MusicPlayer ()
     }
     this.MusicPlayerStatus.pause= false
   }
@@ -305,8 +333,10 @@ class PLAYER {
     if (this.Music) {
       this.EndWithNoCb = true
       await this.destroyPlayer()
-      this.MusicPlayerStatus.id++
-      if (this.MusicPlayerStatus.id > this.MusicPlayerStatus.idMax) this.MusicPlayerStatus.id = 0
+      if (!this.config.random) {
+        this.MusicPlayerStatus.id++
+        if (this.MusicPlayerStatus.id > this.MusicPlayerStatus.idMax) this.MusicPlayerStatus.id = 0
+      }
       this.MusicPlayer()
       log("Next")
     }
@@ -316,8 +346,10 @@ class PLAYER {
     if (this.Music) {
       this.EndWithNoCb = true
       await this.destroyPlayer()
-      this.MusicPlayerStatus.id--
-      if (this.MusicPlayerStatus.id < 0) this.MusicPlayerStatus.id = 0
+      if (!this.config.random) {
+        this.MusicPlayerStatus.id--
+        if (this.MusicPlayerStatus.id < 0) this.MusicPlayerStatus.id = 0
+      }
       this.MusicPlayer()
       log("Previous")
     }
@@ -382,6 +414,10 @@ class PLAYER {
   async loadLib(lib) {
     const loaded = await import(lib)
     return loaded
+  }
+
+  getRandomInt(max) {
+    return Math.floor(Math.random() * max)
   }
 }
 

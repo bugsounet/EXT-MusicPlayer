@@ -1,4 +1,4 @@
-const mm = require('music-metadata')
+//const mm = require('music-metadata')
 const USB = require('usb').usb
 const Drives = require('drivelist')
 const cvlc = require("@bugsounet/cvlc")
@@ -37,7 +37,7 @@ class PLAYER {
     this.USBAutoDetect()
   }
 
-  init () {
+  async init () {
     // Init or Re-init all value :)
     this.Music = null
     this.MusicPlayerStatus = {
@@ -58,6 +58,7 @@ class PLAYER {
     }
     this.MusicInterval = null
     this.audioList= []
+    this.meta = await this.loadLib("music-metadata")
   }
 
   async start () {
@@ -166,7 +167,7 @@ class PLAYER {
       return
     }
     try {
-      const metadata = await mm.parseFile(this.audioList[this.MusicPlayerStatus.id])
+      const metadata = await this.meta.parseFile(this.audioList[this.MusicPlayerStatus.id])
 
       log("Infos from file:", this.audioList[this.MusicPlayerStatus.id])
       log("Title:", metadata.common.title ? metadata.common.title : "unknow" )
@@ -188,7 +189,7 @@ class PLAYER {
       this.MusicPlayerStatus.format = (metadata.format.codec == "MPEG 1 Layer 3") ? "MP3" : metadata.format.codec
       this.MusicPlayerStatus.device= this.AutoDetectUSB ? "USB" : "FOLDER"
 
-      const cover = mm.selectCover(metadata.common.picture);
+      const cover = this.meta.selectCover(metadata.common.picture);
       if (cover) {
         let picture = `data:${cover.format};base64,${cover.data.toString('base64')}`;
         log("Cover Format:", cover.format)
@@ -200,7 +201,7 @@ class PLAYER {
         log("No Cover Found")
         this.MusicPlayerStatus.cover = null
       }
-      var cvlcArgs = ["--no-http-forward-cookies", "--play-and-exit", "--video-title=library @bugsounet/cvlc Music Player"]
+      var cvlcArgs = ["--play-and-exit"]
       this.Music = new cvlc(cvlcArgs)
       this.Music.play(
         this.MusicPlayerStatus.file,
@@ -376,6 +377,11 @@ class PLAYER {
       extname: '.' + extname,
       base64: match[2]
     }
+  }
+  
+  async loadLib(lib) {
+    const loaded = await import(lib)
+    return loaded
   }
 }
 

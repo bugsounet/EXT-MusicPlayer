@@ -227,7 +227,7 @@ class PLAYER {
         log("No Cover Found")
         this.MusicPlayerStatus.cover = null
       }
-      var cvlcArgs = []//"--play-and-exit"]
+      var cvlcArgs = ["--play-and-exit"]
       this.Music = new cvlc(cvlcArgs)
       this.Music.play(
         this.MusicPlayerStatus.file,

@@ -43,6 +43,9 @@ module.exports = NodeHelper.create({
       case 'MUSIC_SWITCH':
         this.SwitchMusic()
         break
+      case "MUSIC_RANDOM":
+        this.music.setRandom(payload)
+        break
     }
   },
 
@@ -77,30 +80,24 @@ module.exports = NodeHelper.create({
   loadBugsounetLibrary: function() {
     let libraries= [
       // { "library to load" : [ "store library name", "path to check", needed without EXT ?] }
-      { "./components/playerLib.js": ["MusicPlayer", "useMusic" ] },
+      { "./components/playerLib.js": "MusicPlayer" },
     ]
     let errors = 0
     return new Promise(resolve => {
       libraries.forEach(library => {
         for (const [name, configValues] of Object.entries(library)) {
-          let libraryToLoad = name,
-              libraryName = configValues[0],
-              libraryPath = configValues[1],
-              index = (obj,i) => { return obj[i] }
+          let libraryToLoad = name
+          let libraryName = configValues
 
-          // libraryActivate: verify if the needed path of config is activated (result of reading config value: true/false) **/
-          let libraryActivate = libraryPath.split(".").reduce(index,this.config) 
-          if (libraryActivate) {
-            try {
-              if (!this.Lib[libraryName]) {
-                this.Lib[libraryName] = require(libraryToLoad)
-                log("Loaded " + libraryToLoad)
-              }
-            } catch (e) {
-              console.error("[MUSIC]", libraryToLoad, "Loading error!" , e)
-              this.sendSocketNotification("WARNING" , {message: "LibraryError", values: libraryToLoad })
-              errors++
+          try {
+            if (!this.Lib[libraryName]) {
+              this.Lib[libraryName] = require(libraryToLoad)
+              log("Loaded " + libraryToLoad)
             }
+          } catch (e) {
+            console.error("[MUSIC]", libraryToLoad, "Loading error!" , e)
+            this.sendSocketNotification("WARNING" , {message: "LibraryError", values: libraryToLoad })
+            errors++
           }
         }
       })

@@ -1,6 +1,6 @@
 const USB = require('usb').usb
 const Drives = require('drivelist')
-const cvlc = require("@bugsounet/cvlc")
+const cvlc = require("@magicmirror2/cvlc")
 const path = require("path")
 const fs = require("fs")
 

@@ -1,7 +1,6 @@
 /**
  ** Module : EXT-MusicPlayer
  ** @bugsounet
- ** ©03-2023
  ** support: https://forum.bugsounet.fr
  **/
 
@@ -10,6 +9,7 @@ Module.register("EXT-MusicPlayer", {
     debug: false,
     verbose: false,
     useUSB: false,
+    random: false,
     musicPath: "/home/pi/Music",
     checkSubDirectory: false,
     autoStart: false,
@@ -18,7 +18,6 @@ Module.register("EXT-MusicPlayer", {
   },
 
   start: function () {
-    this.config.useMusic = true
     this.initializeMusicVolumeVLC()
     this.music= {
       connected: false,
@@ -34,6 +33,7 @@ Module.register("EXT-MusicPlayer", {
     this.config.maxVolume = this.music.targetValue
     this.ready = false
     this.Music = new Music(this.config)
+    this.random = this.config.random
   },
 
   getScripts: function() {
@@ -229,15 +229,17 @@ Module.register("EXT-MusicPlayer", {
           if (args[1] > 100) args[1] = 100
           if (args[1] < 0) args[1] = 0
           handler.reply("TEXT", "Music VOLUME: " + args[1])
-          /* 100 -> 256
-           * args[1] -> y
-           */
           this.MusicCommand("VOLUME", this.convertPercentToValue(args[1]))
         } else handler.reply("TEXT", "Define volume [0-100]")
       }
       if (args[0] == "switch") {
         handler.reply("TEXT", "Switch Database (USB Key/Local Folder)")
         this.MusicCommand("SWITCH")
+      }
+      if (args[0] == "random") {
+        this.random = !this.random
+        handler.reply("TEXT", "Random is now set to " + this.random)
+        this.sendSocketNotification("MUSIC_RANDOM", this.random)
       }
     } else {
       handler.reply("TEXT", 'Need Help for /music commands ?\n\n\
@@ -246,6 +248,7 @@ Module.register("EXT-MusicPlayer", {
   *stop*: Stop music\n\
   *next*: Next track\n\
   *previous*: Previous track\n\
+  *random*: Set Random (toggle)\n\
   *rebuild*: Rebuild music Database\n\
   *volume*: Volume control, it need a value 0-100\n\
   *switch*: Switch between USB Key and Local Folder\n\

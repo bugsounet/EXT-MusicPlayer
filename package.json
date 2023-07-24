@@ -31,7 +31,7 @@
   "dependencies": {
     "@magicmirror2/cvlc": "^1.0.8",
     "drivelist": "^11.1.0",
-    "esbuild": "^0.18.14",
+    "esbuild": "^0.18.16",
     "glob": "^10.3.3",
     "magicmirror-rebuild": "^1.0.8",
     "music-metadata": "^8.1.4",

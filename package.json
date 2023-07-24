@@ -1,12 +1,12 @@
 {
   "name": "EXT-MusicPlayer",
-  "version": "1.1.4",
-  "rev": "230720",
+  "version": "1.1.5",
+  "rev": "230724",
   "description": "An embedded Music Player on MagicMirror.",
   "main": "EXT-MusicPlayer.js",
   "scripts": {
-    "preinstall": "installer/preinstall.sh",
-    "postinstall": "installer/postinstall.sh",
+    "preinstall": "installer/preinstall.sh -d 'libudev-dev'",
+    "postinstall": "installer/postinstall.sh -r -m -b",
     "update": "installer/update.sh",
     "rebuild": "installer/rebuild.sh",
     "reset": "git reset --hard",
@@ -31,7 +31,7 @@
   "dependencies": {
     "@magicmirror2/cvlc": "^1.0.8",
     "drivelist": "^11.1.0",
-    "esbuild": "^0.18.14",
+    "esbuild": "^0.18.16",
     "glob": "^10.3.3",
     "magicmirror-rebuild": "^1.0.8",
     "music-metadata": "^8.1.4",

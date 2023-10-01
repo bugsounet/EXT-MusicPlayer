@@ -7,7 +7,9 @@ class Music {
     this.debug = Config.debug
     this.currentPlayback = null
     this.connected = false
-    this.timer = null
+    this.hideTimer = null
+    this.hide = (...args) => Config.hide(...args)
+    this.show = (...args) => Config.show(...args)
     console.log("[MUSIC] Music Player Loaded")
   }
 
@@ -15,8 +17,7 @@ class Music {
   prepare() {
     var viewDom = document.createElement("div")
     viewDom.id = "EXT_MUSIC"
-    viewDom.className= "inactive animate__animated"
-    viewDom.style.setProperty('--animate-duration', '1s')
+    viewDom.className= "inactive"
 
     viewDom.appendChild(this.getHTMLElementWithID('div', "EXT_MUSIC_BACKGROUND"))
 
@@ -178,24 +179,22 @@ class Music {
 
     const sDom = document.getElementById("EXT_MUSIC")
     if (playbackItem.connected) {
+      clearTimeout(this.hideTimer)
       sDom.classList.remove("inactive")
       if (!this.connected) {
         if (this.debug) console.log("[MUSIC] Connected")
         this.connected = true
-        sDom.classList.remove("animate__flipOutX")
-        sDom.classList.add("animate__flipInX")
+        this.show(1000, () => {}, {lockString: "EXT-MUSICPLAYER_LOCK"})
       }
-    }
-    else {
+    } else {
       if (this.connected) {
         if (this.debug) console.log("[MUSIC] Disconnected")
         this.connected = false
-        sDom.classList.remove("animate__flipInX")
-        sDom.classList.add("animate__flipOutX")
-        sDom.addEventListener('animationend', (e) => {
-          if (e.animationName == "flipOutX") sDom.classList.add("inactive")
-          e.stopPropagation()
-        }, {once: true})
+        clearTimeout(this.hideTimer)
+        this.hide(1000, () => {}, {lockString: "EXT-MUSICPLAYER_LOCK"})
+        this.hideTimer = setTimeout(() => {
+          sDom.classList.add("inactive")
+        },1000)
       }
       return
     }

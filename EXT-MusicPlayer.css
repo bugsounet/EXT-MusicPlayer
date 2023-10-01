@@ -154,9 +154,19 @@ progress[value]#EXT_MUSIC_PROGRESS_BAR::-webkit-progress-bar {
   align-content: flex-end;
 }
 
+#EXT_MUSIC_BACKGROUND.fade-in,
 #EXT_MUSIC_COVER_IMAGE.fade-in {
-  animation: fadeInOpacity 1s 1;
+  animation: Music_fadeInOpacity 1s 1;
   animation-timing-function: linear;
+}
+
+@keyframes Music_fadeInOpacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 #EXT_MUSIC.bottomIn {
@@ -215,5 +225,5 @@ progress[value]#EXT_MUSIC_PROGRESS_BAR::-webkit-progress-bar {
 }
 
 #EXT_MUSIC.inactive {
- display:none;
+  display:none;
 }

@@ -31,6 +31,8 @@ Module.register("EXT-MusicPlayer", {
     }
     this.config.minVolume = this.music.minValue
     this.config.maxVolume = this.music.targetValue
+    this.config.hide = (...args) => this.hide(...args)
+    this.config.show = (...args) => this.show(...args)
     this.ready = false
     this.Music = new Music(this.config)
     this.random = this.config.random

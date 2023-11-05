@@ -30,7 +30,7 @@
   "homepage": "https://wiki.bugsounet.fr/en/EXT-MusicPlayer",
   "dependencies": {
     "@magicmirror2/cvlc": "^1.0.8",
-    "drivelist": "github:bugsounet/drivelist",
+    "drivelist": "github:bugsounet/drivelist#main",
     "esbuild": "^0.19.5",
     "glob": "^10.3.10",
     "magicmirror-rebuild": "^1.0.9",

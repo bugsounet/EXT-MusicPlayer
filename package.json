@@ -34,7 +34,7 @@
     "esbuild": "^0.19.5",
     "glob": "^10.3.10",
     "magicmirror-rebuild": "^1.0.9",
-    "music-metadata": "^8.1.4",
+    "music-metadata": "^8.2.0",
     "usb": "^2.11.0"
   }
 }

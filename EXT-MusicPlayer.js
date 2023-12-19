@@ -58,8 +58,8 @@ Module.register("EXT-MusicPlayer", {
   },
 
   notificationReceived: function(noti, payload, sender) {
-    if (noti == "GW_READY") {
-      if (sender.name == "Gateway") {
+    if (noti == "GA_READY") {
+      if (sender.name == "MMM-GoogleAssistant") {
         this.sendSocketNotification("INIT", this.config)
         this.ready = true
         this.sendNotification("EXT_HELLO", this.name)

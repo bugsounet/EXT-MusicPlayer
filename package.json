@@ -1,7 +1,7 @@
 {
   "name": "EXT-MusicPlayer",
-  "version": "1.2.0",
-  "rev": "240103",
+  "version": "1.2.1",
+  "rev": "240209",
   "description": "An embedded Music Player on MagicMirror.",
   "main": "EXT-MusicPlayer.js",
   "scripts": {
@@ -29,11 +29,11 @@
   },
   "homepage": "https://wiki.bugsounet.fr/en/EXT-MusicPlayer",
   "dependencies": {
+    "@electron/rebuild": "^3.6.0",
     "@magicmirror2/cvlc": "^1.0.8",
     "drivelist": "github:bugsounet/drivelist#main",
     "esbuild": "^0.20.0",
     "glob": "^10.3.10",
-    "magicmirror-rebuild": "^1.0.9",
     "music-metadata": "^8.2.0",
     "usb": "^2.11.0"
   }

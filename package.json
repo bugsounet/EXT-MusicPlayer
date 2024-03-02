@@ -41,5 +41,11 @@
     "glob": "^10.3.10",
     "music-metadata": "^8.2.0",
     "usb": "^2.11.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.57.0",
+    "@stylistic/eslint-plugin": "^1.6.3",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1"
   }
 }

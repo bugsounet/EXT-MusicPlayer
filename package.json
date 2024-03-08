@@ -36,7 +36,7 @@
   "dependencies": {
     "@electron/rebuild": "^3.6.0",
     "@magicmirror2/cvlc": "^1.0.8",
-    "drivelist": "^11.2.1",
+    "drivelist": "^11.2.2",
     "esbuild": "^0.20.1",
     "glob": "^10.3.10",
     "music-metadata": "^8.2.0",

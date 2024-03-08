@@ -1,7 +1,7 @@
 {
   "name": "EXT-MusicPlayer",
-  "version": "1.2.0",
-  "rev": "240103",
+  "version": "1.3.0",
+  "rev": "240302",
   "description": "An embedded Music Player on MagicMirror.",
   "main": "EXT-MusicPlayer.js",
   "scripts": {
@@ -10,9 +10,14 @@
     "update": "installer/update.sh",
     "rebuild": "installer/rebuild.sh",
     "reset": "git reset --hard",
-    "clean": "rm -rf node_modules package-lock.json"
+    "clean": "rm -rf node_modules package-lock.json",
+    "lint": "eslint *.js installer/*.js components/*.js --config eslint.config.js",
+    "lint:fix": "eslint *.js installer/*.js components/*.js --config eslint.config.js --fix",
+    "test": "npm run lint",
+    "test:minify": "cd installer && node minify.js"
   },
   "keywords": [
+    "MMM-GoogleAssistant",
     "magic mirror",
     "module",
     "volume",
@@ -29,12 +34,18 @@
   },
   "homepage": "https://wiki.bugsounet.fr/en/EXT-MusicPlayer",
   "dependencies": {
+    "@electron/rebuild": "^3.6.0",
     "@magicmirror2/cvlc": "^1.0.8",
-    "drivelist": "github:bugsounet/drivelist#main",
-    "esbuild": "^0.19.11",
+    "drivelist": "^11.2.2",
+    "esbuild": "^0.20.1",
     "glob": "^10.3.10",
-    "magicmirror-rebuild": "^1.0.9",
     "music-metadata": "^8.2.0",
-    "usb": "^2.11.0"
+    "usb": "^2.12.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.57.0",
+    "@stylistic/eslint-plugin": "^1.6.3",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1"
   }
 }

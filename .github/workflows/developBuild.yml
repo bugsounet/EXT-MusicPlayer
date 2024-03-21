@@ -1,0 +1,27 @@
+name: "MagicMirror² (develop) and EXT-MusicPlayer build Testing"
+
+on: [pull_request]
+
+jobs:
+  build:
+    name: Test install EXT-MusicPlayer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout MagicMirror² (develop)
+        uses: actions/checkout@v4
+        with:
+          repository: MagicMirrorOrg/MagicMirror
+          ref: develop
+
+      - name: Install MagicMirror²
+        run: npm install
+
+      - name: Checkout EXT-MusicPlayer
+        uses: actions/checkout@v4
+        with:
+          path: MagicMirror/modules/EXT-MusicPlayer
+
+      - name: Install MMM-GoogleAssistant
+        run: npm install
+        working-directory: MagicMirror/modules/EXT-MusicPlayer
+        continue-on-error: false

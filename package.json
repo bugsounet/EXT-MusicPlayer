@@ -38,7 +38,7 @@
     "@magicmirror2/cvlc": "^1.0.8",
     "drivelist": "^11.2.2",
     "esbuild": "^0.20.2",
-    "glob": "^10.3.10",
+    "glob": "^10.3.12",
     "music-metadata": "^8.2.0",
     "usb": "^2.12.1"
   },

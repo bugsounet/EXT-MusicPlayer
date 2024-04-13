@@ -21,7 +21,7 @@ jobs:
         with:
           path: MagicMirror/modules/EXT-MusicPlayer
 
-      - name: Install MMM-GoogleAssistant
+      - name: Install EXT-MusicPlayer
         run: npm install
         working-directory: MagicMirror/modules/EXT-MusicPlayer
         continue-on-error: false

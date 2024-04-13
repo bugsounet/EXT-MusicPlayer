@@ -49,8 +49,17 @@ fi
 # Go back to module root
 cd ..
 
+# module name
+Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
+
 if [[ $rebuild == 1 ]]; then
   Installer_info "Rebuild MagicMirror..."
+
+  cd node_modules/usb && npm run rebuild 1>/dev/null || {
+    Installer_error "Rebuild Failed"
+    exit 255
+  }
+
   electron-rebuild 1>/dev/null || {
     Installer_error "Rebuild Failed"
     exit 255
@@ -58,9 +67,6 @@ if [[ $rebuild == 1 ]]; then
   Installer_success "Done"
   echo
 fi
-
-# module name
-Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
 
 # the end...
 if [[ $bugsounet == 1 ]]; then

@@ -225,6 +225,10 @@ class PLAYER {
     return this.MusicPlayerStatus.connected;
   }
 
+  getTrackLength () {
+    return this.MusicPlayerStatus.idMax;
+  }
+
   setPause () {
     if (this.MusicPlayerStatus.ready) {
       if (this.MusicPlayerStatus.pause) {
@@ -237,8 +241,18 @@ class PLAYER {
     }
   }
 
-  setPlay () {
+  setPlay (id) {
     if (this.MusicPlayerStatus.ready) {
+      const TrackNumber = parseInt(id);
+      if (TrackNumber >= 0) {
+        if (TrackNumber > this.MusicPlayerStatus.idMax) console.error(`[MUSIC] Track not found: ${TrackNumber}`);
+        else {
+          log(`Search Track: ${TrackNumber}`);
+          this.MusicPlayerStatus.id = TrackNumber;
+          this.MusicPlayer();
+        }
+        return;
+      }
       if (this.MusicPlayerStatus.pause) {
         log("Resume Play");
         this.vlc.play();

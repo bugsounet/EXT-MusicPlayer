@@ -207,27 +207,27 @@ Module.register("EXT-MusicPlayer", {
         handler.reply("TEXT", "Music PLAY");
         this.MusicCommand("PLAY");
       }
-      if (args[0] === "pause") {
+      else if (args[0] === "pause") {
         handler.reply("TEXT", "Music PAUSE");
         this.MusicCommand("PAUSE");
       }
-      if (args[0] === "stop") {
+      else if (args[0] === "stop") {
         handler.reply("TEXT", "Music STOP");
         this.MusicCommand("STOP");
       }
-      if (args[0] === "next") {
+      else if (args[0] === "next") {
         handler.reply("TEXT", "Music NEXT");
         this.MusicCommand("NEXT");
       }
-      if (args[0] === "previous") {
+      else if (args[0] === "previous") {
         handler.reply("TEXT", "Music PREVIOUS");
         this.MusicCommand("PREVIOUS");
       }
-      if (args[0] === "rebuild") {
+      else if (args[0] === "rebuild") {
         handler.reply("TEXT", "Rebuild music database");
         this.MusicCommand("REBUILD");
       }
-      if (args[0] === "volume") {
+      else if (args[0] === "volume") {
         if (args[1]) {
           if (isNaN(args[1])) return handler.reply("TEXT", "Must be a number ! [0-100]");
           if (args[1] > 100) args[1] = 100;
@@ -236,15 +236,24 @@ Module.register("EXT-MusicPlayer", {
           this.MusicCommand("VOLUME", this.convertPercentToValue(args[1]));
         } else handler.reply("TEXT", "Define volume [0-100]");
       }
-      if (args[0] === "switch") {
+      else if (args[0] === "switch") {
         handler.reply("TEXT", "Switch Database (USB Key/Local Folder)");
         this.MusicCommand("SWITCH");
       }
-      if (args[0] === "random") {
+      else if (args[0] === "random") {
         this.random = !this.random;
-        handler.reply("TEXT", `Random is now set to ${  this.random}`);
+        handler.reply("TEXT", `Random is now set to ${this.random}`);
         this.sendSocketNotification("MUSIC_RANDOM", this.random);
       }
+      else if (!isNaN(args[0])) {
+        let track = parseInt(args[0]);
+        if (track > 0) {
+          handler.reply("TEXT", `Start Playing id: ${track}`);
+          this.MusicCommand("PLAY", track-1);
+        }
+        else handler.reply("TEXT", "Track must be > 1");
+      }
+      else handler.reply("TEXT", `Unknow command: ${args[0]}`);
     } else {
       handler.reply("TEXT", "Need Help for /music commands ?\n\n\
   *play*: Launch music (last title)\n\
@@ -256,15 +265,16 @@ Module.register("EXT-MusicPlayer", {
   *rebuild*: Rebuild music Database\n\
   *volume*: Volume control, it need a value 0-100\n\
   *switch*: Switch between USB Key and Local Folder\n\
+  *<track_number>*: play the track number\n\
   ",{ parse_mode:"Markdown" });
     }
   },
 
   /** Music commands/controls **/
-  MusicCommand (command, payload, realValue) {
+  MusicCommand (command, payload) {
     switch (command) {
       case "PLAY":
-        this.sendSocketNotification("MUSIC_PLAY");
+        this.sendSocketNotification("MUSIC_PLAY", payload);
         break;
       case "PAUSE":
         this.sendSocketNotification("MUSIC_PAUSE");

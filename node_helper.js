@@ -18,7 +18,7 @@ module.exports = NodeHelper.create({
         break;
       /** Music module **/
       case "MUSIC_PLAY":
-        this.PlayMusic();
+        this.PlayMusic(payload);
         break;
       case "MUSIC_STOP":
         this.StopMusic();
@@ -112,8 +112,8 @@ module.exports = NodeHelper.create({
     }
   },
 
-  PlayMusic () {
-    this.music.setPlay();
+  PlayMusic (id) {
+    this.music.setPlay(id);
   },
 
   PauseMusic () {

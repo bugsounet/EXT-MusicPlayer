@@ -1,17 +1,12 @@
-const path = require("path");
-const fs = require("fs");
+const path = require("node:path");
+const fs = require("node:fs");
+const { spawn } = require('node:child_process');
 const USB = require("usb").usb;
 const Drives = require("drivelist");
-const cvlc = require("@magicmirror2/cvlc");
 
-var _log = function () {
-  var context = "[MUSIC]";
-  return Function.prototype.bind.call(console.log, console, context);
-}();
+const VLC = require("vlc-client");
 
-var log = function () {
-  //do nothing
-};
+var log = function () { /*do nothing*/ };
 
 class PLAYER {
   constructor (config, debug, callback = ()=>{}) {
@@ -26,13 +21,12 @@ class PLAYER {
     };
     this.config = Object.assign(this.default, this.config);
     this.sendSocketNotification = callback.sendSocketNotification;
-    if (debug === true) log = _log;
+    if (debug) log = (...args) => { console.log("[MUSIC]", ...args); };
     this.meta = null;
     this.forceStop = false;
     this.EndWithNoCb = false;
     this.AutoDetectUSB= false;
     this.FileExtensions = ["mp3","flac","wav", "ogg", "opus", "m4a"];
-    this.Music = null;
     this.MusicPlayerStatus = {
       connected: false,
       pause: false,
@@ -45,19 +39,26 @@ class PLAYER {
       date: 0,
       seed: 0,
       cover: null,
-      id: null,
+      id: 0,
       idMax: 0,
       format: null
     };
-    this.MusicInterval = null;
     this.audioList= [];
     if (this.config.useUSB) this.AutoDetectUSB= true;
     this.USBAutoDetect();
+    this.cvlcPassword = `EXT-MusicPlayer_v${require("../package.json").version}_${new Date(Date.now()).toISOString()}`
+    this.vlc = new VLC.Client({
+      ip: "localhost",
+      port: 8082,
+      password: this.cvlcPassword,
+      log: debug
+    });
+    console.log("--->", this.vlc)
+    this.spawnCVLC()
   }
 
   async init () {
     // Re-init all value :)
-    this.Music = null;
     this.MusicPlayerStatus = {
       connected: false,
       pause: false,
@@ -70,11 +71,10 @@ class PLAYER {
       date: 0,
       seed: 0,
       cover: null,
-      id: null,
+      id: 0,
       idMax: 0,
       format: null
     };
-    this.MusicInterval = null;
     this.audioList= [];
   }
 
@@ -159,7 +159,6 @@ class PLAYER {
   }
 
   async MusicPlayList () {
-    await this.destroyPlayer();
     if (!this.audioList.length) {
       this.MusicPlayerStatus.idMax = 0;
       return console.log("[Music] No Music to Read");
@@ -168,12 +167,11 @@ class PLAYER {
     }
 
     if (!this.config.random) {
-      if (this.MusicPlayerStatus.id === null) {
-        this.MusicPlayerStatus.id = 0;
+      if (this.MusicPlayerStatus.id === 0) {
         this.MusicPlayer();
       } else {
         this.MusicPlayerStatus.id++;
-        if (this.MusicPlayerStatus.id > this.MusicPlayerStatus.idMax) this.MusicPlayerStatus.id = null;
+        if (this.MusicPlayerStatus.id > this.MusicPlayerStatus.idMax) this.MusicPlayerStatus.id = 0;
         else this.MusicPlayer();
       }
     } else this.MusicPlayer();
@@ -181,52 +179,46 @@ class PLAYER {
 
   /** Music Player **/
   async MusicPlayer () {
-    if (this.Music) {
-      console.log("error already launched");
-      return;
-    }
     try {
-      if (!this.meta) this.meta = await this.loadLib("music-metadata");
       if (this.config.random) {
         let randomId = await this.getRandomInt(this.audioList.length);
         if (randomId === this.MusicPlayerStatus.id) return this.MusicPlayer (); // same song ?
         this.MusicPlayerStatus.id = randomId;
       }
-      console.log("Info:", this.audioList[this.MusicPlayerStatus.id]);
-      const metadata = await this.meta.parseFile(this.audioList[this.MusicPlayerStatus.id]);
-
-      log("Infos from file:", this.audioList[this.MusicPlayerStatus.id]);
-      log("Title:", metadata.common.title ? metadata.common.title : "unknow" );
-      log("Artist:" , metadata.common.artist ? metadata.common.artist: "unknow");
-      log("Release Date:", metadata.common.date ? metadata.common.date : "unknow");
-      log("Duration:", `${parseInt((metadata.format.duration).toFixed(0))  } secs`);
-      log("Format:", metadata.format.codec);
-      log("PlayList Id:", `${this.MusicPlayerStatus.id}/${this.MusicPlayerStatus.idMax}`);
-
+      
       // make structure
-      this.MusicPlayerStatus.connected= false;
+      this.MusicPlayerStatus.connected = false;
       this.MusicPlayerStatus.current= 0;
-      this.MusicPlayerStatus.duration= parseInt((metadata.format.duration).toFixed(0));
+      this.MusicPlayerStatus.duration= 300 //parseInt((metadata.format.duration).toFixed(0));
       this.MusicPlayerStatus.file= this.audioList[this.MusicPlayerStatus.id];
-      this.MusicPlayerStatus.title= metadata.common.title ? metadata.common.title : path.basename(this.MusicPlayerStatus.file);
-      this.MusicPlayerStatus.artist= metadata.common.artist ? metadata.common.artist: "-";
-      this.MusicPlayerStatus.date= metadata.common.date ? metadata.common.date : "-";
       this.MusicPlayerStatus.seed = Date.now();
-      this.MusicPlayerStatus.format = (metadata.format.codec === "MPEG 1 Layer 3") ? "MP3" : metadata.format.codec;
       this.MusicPlayerStatus.device= this.AutoDetectUSB ? "USB" : "FOLDER";
 
-      const cover = this.meta.selectCover(metadata.common.picture);
-      if (cover) {
-        let picture = `data:${cover.format};base64,${cover.data.toString("base64")}`;
-        log("Cover Format:", cover.format);
-        var filepath = this.base64ToImg(picture, `${this.config.modulePath}/tmp/Music/`, "cover");
-        log("Cover Saved to:", filepath);
-        this.MusicPlayerStatus.cover = path.basename(filepath);
+      log("Start playing:", path.basename(this.MusicPlayerStatus.file));
+      await this.vlc.playFile(this.MusicPlayerStatus.file, { novideo: true, wait: true, timeout: 300})
+      
+      const fileMeta = await this.vlc.meta()
+      console.log("fileMeta", fileMeta)
+      this.MusicPlayerStatus.title= fileMeta.title ? fileMeta.title : path.basename(this.MusicPlayerStatus.file);
+      this.MusicPlayerStatus.artist= fileMeta.artist ? fileMeta.artist: "-";
+      this.MusicPlayerStatus.date= fileMeta.date ? fileMeta.date : "-";
+      try {
+        if (fileMeta.artwork_url) {
+          let file = fileMeta.artwork_url.replace("file://", "")
+          let fileName= path.basename(file);
+          fs.copyFileSync(file, `${this.config.modulePath}/tmp/Music/${fileName}`)
+          this.MusicPlayerStatus.cover = fileName;
+        } else {
+          this.MusicPlayerStatus.cover = null;
+        }
+      } catch (err) { 
+        console.log("--->",err);
+        his.MusicPlayerStatus.cover = null;
       }
-      else {
-        log("No Cover Found");
-        this.MusicPlayerStatus.cover = null;
-      }
+      
+      console.log(this.MusicPlayerStatus)
+      //console.log(this.audioList)
+      /*
       var cvlcArgs = ["--play-and-exit"];
       this.Music = new cvlc(cvlcArgs);
       this.Music.play(
@@ -240,7 +232,6 @@ class PLAYER {
         },
         ()=> {
           log("Music is now ended !");
-          clearInterval(this.MusicInterval);
           if ((this.MusicPlayerStatus.id >= this.MusicPlayerStatus.idMax) || this.MusicPlayerStatus.id === null) {
             this.MusicPlayerStatus.connected = false;
             this.send(this.MusicPlayerStatus);
@@ -258,9 +249,9 @@ class PLAYER {
           this.MusicPlayList();
         }
       );
+      */
     } catch (error) {
       console.error("[MUSIC] Music Player Error:", error.message);
-      clearInterval(this.MusicInterval);
       if ((this.MusicPlayerStatus.id >= this.MusicPlayerStatus.idMax) || this.MusicPlayerStatus.id === null) {
         this.MusicPlayerStatus.connected = false;
         this.send(this.MusicPlayerStatus);
@@ -269,6 +260,7 @@ class PLAYER {
     }
   }
 
+/*
   realTimeInfo () {
     this.MusicInterval = setInterval(() => {
       this.Music.cmd("get_time", (err, response) => {
@@ -280,6 +272,7 @@ class PLAYER {
       });
     }, 1000);
   }
+*/
 
   send (data) {
     this.sendSocketNotification("Music_Player", data);
@@ -288,8 +281,6 @@ class PLAYER {
   destroyPlayer () {
     if (this.Music) {
       this.Music.destroy();
-      this.Music= null;
-      clearInterval(this.MusicInterval);
       log("Boom! Cvlc Player Destroyed!");
     }
   }
@@ -308,19 +299,9 @@ class PLAYER {
   }
 
   setPlay () {
-    if (this.Music) {
-      this.Music.cmd("play");
-      log("Play");
-    }
-    else {
-      if (!this.config.random) {
-        this.MusicPlayerStatus.id--;
-        if (this.MusicPlayerStatus.id < 0) this.MusicPlayerStatus.id = 0;
-        this.MusicPlayList();
-        log("Play Last Title");
-      } else this.MusicPlayer ();
-    }
+    this.MusicPlayer();
     this.MusicPlayerStatus.pause= false;
+    log("Play");
   }
 
   setStop () {
@@ -329,23 +310,20 @@ class PLAYER {
     log("Stop");
   }
 
-  async setNext () {
-    if (this.Music) {
-      this.EndWithNoCb = true;
-      await this.destroyPlayer();
-      if (!this.config.random) {
+  setNext () {
+    if (this.cvlcPlayer) {
+      if (this.config.random) this.MusicPlayer();
+      else {
         this.MusicPlayerStatus.id++;
         if (this.MusicPlayerStatus.id > this.MusicPlayerStatus.idMax) this.MusicPlayerStatus.id = 0;
+        this.MusicPlayer()
+        log("Next");
       }
-      this.MusicPlayer();
-      log("Next");
     }
   }
 
-  async setPrevious () {
-    if (this.Music) {
-      this.EndWithNoCb = true;
-      await this.destroyPlayer();
+  setPrevious () {
+    if (this.cvlcPlayer) {
       if (!this.config.random) {
         this.MusicPlayerStatus.id--;
         if (this.MusicPlayerStatus.id < 0) this.MusicPlayerStatus.id = 0;
@@ -386,44 +364,54 @@ class PLAYER {
     log("Set Random to", this.config.random);
   }
 
-  /** transform base64 to image **/
-  base64ToImg (data, destpath, name) {
-    var result = this.img(data);
-    var filepath = path.join(destpath, name + result.extname);
-
-    fs.writeFileSync(filepath, result.base64, { encoding: "base64" });
-    return filepath;
-  }
-
-  img (data) {
-    var reg = /^data:image\/([\w+]+);base64,([\s\S]+)/;
-    var match = data.match(reg);
-    var baseType = {
-      jpeg: "jpg"
-    };
-
-    baseType["svg+xml"] = "svg";
-
-    if (!match) {
-      throw new Error("image base64 data error");
-    }
-
-    var extname = baseType[match[1]] ? baseType[match[1]] : match[1];
-
-    return {
-      extname: `.${  extname}`,
-      base64: match[2]
-    };
-  }
-  
-  async loadLib (lib) {
-    const loaded = await import(lib);
-    return loaded;
-  }
-
   getRandomInt (max) {
     return Math.floor(Math.random() * max);
   }
+
+  /* create cvlc server */
+  spawnCVLC () {
+    if (this.cvlcPlayer) return
+    const args = [
+      "-I http",
+      "--extraintf", "http",
+      "--http-port", 8082,
+      "--http-host", "localhost",
+      "--http-password", this.cvlcPassword,
+    ];
+    this.cvlcPlayer = spawn("cvlc",args)
+    this.cvlcPlayer.stdout.on('data', (data) => {
+      console.log(`[MUSIC]  data: ${data}`);
+    });
+    
+    this.cvlcPlayer.stderr.on('data', (data) => {
+      console.error(`[MUSIC] stderr: ${data}`);
+    });
+    
+    this.cvlcPlayer.on('close', (code) => {
+      console.log(`[MUSIC]  exited with code ${code}`);
+    });
+
+    this.statusInterval = setInterval(async () => {
+      const status = await this.vlc.status()
+      if (status.state === "stopped") {
+        if (this.MusicPlayerStatus.lastState) {
+          this.setNext()
+        } else {
+          this.MusicPlayerStatus.connected = false;
+          this.MusicPlayerStatus.lastState = false;
+          this.send(this.MusicPlayerStatus);
+        }
+        return
+      }
+      this.MusicPlayerStatus.connected = true;
+      this.MusicPlayerStatus.lastState = true;
+      this.MusicPlayerStatus.current = status.time+1
+      this.MusicPlayerStatus.volume = (parseInt(status.volume)*100)/256
+      //console.log("--> status,", status)
+      //console.log("meta()", await this.vlc.meta())
+      this.send(this.MusicPlayerStatus);
+    },1000)
+  } 
 }
 
 module.exports = PLAYER;

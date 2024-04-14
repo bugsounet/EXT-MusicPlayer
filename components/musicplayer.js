@@ -227,7 +227,7 @@ class Music {
     deviceIcon.className= this.getDeviceIconClass(playbackItem.device);
     
     const USB = document.querySelector("#EXT_MUSIC_DEVICE .text");
-    USB.textContent = playbackItem.format + (this.debug ? (`(${playbackItem.id+1 }/${playbackItem.idMax+1 })`) : "");
+    USB.textContent = `${playbackItem.id+1}/${playbackItem.idMax+1 }`;
     this.updateVolume(playbackItem.volume);
     this.updateProgress(playbackItem.current,playbackItem.duration);
   }

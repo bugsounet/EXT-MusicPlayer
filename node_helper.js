@@ -80,7 +80,6 @@ module.exports = NodeHelper.create({
   /** It will not crash MM (black screen) **/
   loadBugsounetLibrary () {
     let libraries= [
-      // { "library to load" : [ "store library name", "path to check", needed without EXT ?] }
       { "./components/playerLib.js": "MusicPlayer" }
     ];
     let errors = 0;
@@ -93,7 +92,7 @@ module.exports = NodeHelper.create({
           try {
             if (!this.Lib[libraryName]) {
               this.Lib[libraryName] = require(libraryToLoad);
-              log(`Loaded ${  libraryToLoad}`);
+              log(`Loaded ${libraryToLoad}`);
             }
           } catch (e) {
             console.error("[MUSIC]", libraryToLoad, "Loading error!" , e);

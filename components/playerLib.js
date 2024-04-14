@@ -121,13 +121,13 @@ class PLAYER {
 
   PlugOutUSB () {
     log("Warn: USB Key Released!");
-    this.destroyPlayer();
     this.init();
   }
 
   search (Path) {
     if (!fs.existsSync(Path)){
       console.log(`[MUSIC] Error: No such directory: ${Path}`);
+      this.sendSocketNotification("ERROR", `No such directory: ${Path}`);
       return;
     }
     log(`Search in ${Path}`);
@@ -213,6 +213,7 @@ class PLAYER {
       }
     } catch (error) {
       console.error("[MUSIC] Music Player Error:", error.message);
+      this.sendSocketNotification("WARN", error.message);
     }
   }
 
@@ -245,8 +246,10 @@ class PLAYER {
     if (this.MusicPlayerStatus.ready) {
       const TrackNumber = parseInt(id);
       if (TrackNumber >= 0) {
-        if (TrackNumber > this.MusicPlayerStatus.idMax) console.error(`[MUSIC] Track not found: ${TrackNumber}`);
-        else {
+        if (TrackNumber > this.MusicPlayerStatus.idMax) {
+          console.error(`[MUSIC] Track not found: ${TrackNumber}`);
+          this.sendSocketNotification("WARN", `Track not found: ${TrackNumber}`);
+        } else {
           log(`Search Track: ${TrackNumber}`);
           this.MusicPlayerStatus.id = TrackNumber;
           this.MusicPlayer();
@@ -349,6 +352,7 @@ class PLAYER {
     this.cvlcPlayer = spawn("cvlc",args);
     this.cvlcPlayer.on("error", (err) => {
       console.error("[MUSIC] [Server] Can't start CVLC Server! Reason:", err.message);
+      this.sendSocketNotification("ERROR", `Can't start CVLC Server! Reason: ${err.message}`);
     });
 
     this.cvlcPlayer.on("close", (code) => {
@@ -373,7 +377,11 @@ class PLAYER {
         if (err.code === "ECONNREFUSED" || err.message.includes("Unauthorized")) {
           clearInterval(this.statusInterval);
           console.error("[MUSIC] Can't start CVLC Client! Reason:", err.message);
-        } else console.error("[MUSIC]", err.message);
+          this.sendSocketNotification("ERROR", `Can't start CVLC Client! Reason: ${err.message}`);
+        } else {
+          console.error("[MUSIC]", err.message);
+          this.sendSocketNotification("ERROR", `CVLC Client error: ${err.message}`);
+        }
       }
     );
 

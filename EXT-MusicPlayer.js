@@ -157,6 +157,20 @@ Module.register("EXT-MusicPlayer", {
         });
         this.ready = false;
         break;
+      case "ERROR":
+        this.sendNotification("EXT_ALERT", {
+          type: "error",
+          message: payload,
+          timer: 10000
+        });
+        break;
+      case "WARN":
+        this.sendNotification("EXT_ALERT", {
+          type: "warning",
+          message: payload,
+          timer: 10000
+        });
+        break;
     }
   },
 

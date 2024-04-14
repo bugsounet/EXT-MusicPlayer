@@ -141,7 +141,7 @@ class Music {
 
     const bar = this.getHTMLElementWithID("progress", "EXT_MUSIC_PROGRESS_BAR");
     bar.value = 0;
-    bar.max = 100;
+    bar.max = 1;
 
     progress.appendChild(bar);
     return progress;
@@ -229,7 +229,7 @@ class Music {
     const USB = document.querySelector("#EXT_MUSIC_DEVICE .text");
     USB.textContent = `${playbackItem.id+1}/${playbackItem.idMax+1 }`;
     this.updateVolume(playbackItem.volume);
-    this.updateProgress(playbackItem.current,playbackItem.duration);
+    this.updateProgress(playbackItem.current);
   }
 
   updateVolume (volume_percent) {
@@ -256,11 +256,9 @@ class Music {
     else return this.getFAIconClass("FOLDER");
   }
 
-  updateProgress (progressMS, durationMS) {
+  updateProgress (progress) {
     const bar = document.getElementById("EXT_MUSIC_PROGRESS_BAR");
-    bar.value = progressMS;
-
-    if (bar.max !== durationMS) bar.max = durationMS;
+    bar.value = progress;
   }
 
   setPause () {

@@ -13,6 +13,7 @@ Module.register("EXT-MusicPlayer", {
     musicPath: "/home/pi/Music",
     checkSubDirectory: false,
     autoStart: false,
+    loop: false,
     minVolume: 30,
     maxVolume: 100
   },
@@ -231,7 +232,7 @@ Module.register("EXT-MusicPlayer", {
           if (isNaN(args[1])) return handler.reply("TEXT", "Must be a number ! [0-100]");
           if (args[1] > 100) args[1] = 100;
           if (args[1] < 0) args[1] = 0;
-          handler.reply("TEXT", `Music VOLUME: ${  args[1]}`);
+          handler.reply("TEXT", `Music VOLUME: ${args[1]}`);
           this.MusicCommand("VOLUME", this.convertPercentToValue(args[1]));
         } else handler.reply("TEXT", "Define volume [0-100]");
       }

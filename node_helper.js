@@ -18,7 +18,7 @@ module.exports = NodeHelper.create({
         break;
       /** Music module **/
       case "MUSIC_PLAY":
-        this.PlayMusic();
+        this.PlayMusic(payload);
         break;
       case "MUSIC_STOP":
         this.StopMusic();
@@ -80,7 +80,6 @@ module.exports = NodeHelper.create({
   /** It will not crash MM (black screen) **/
   loadBugsounetLibrary () {
     let libraries= [
-      // { "library to load" : [ "store library name", "path to check", needed without EXT ?] }
       { "./components/playerLib.js": "MusicPlayer" }
     ];
     let errors = 0;
@@ -93,7 +92,7 @@ module.exports = NodeHelper.create({
           try {
             if (!this.Lib[libraryName]) {
               this.Lib[libraryName] = require(libraryToLoad);
-              log(`Loaded ${  libraryToLoad}`);
+              log(`Loaded ${libraryToLoad}`);
             }
           } catch (e) {
             console.error("[MUSIC]", libraryToLoad, "Loading error!" , e);
@@ -113,8 +112,8 @@ module.exports = NodeHelper.create({
     }
   },
 
-  PlayMusic () {
-    this.music.setPlay();
+  PlayMusic (id) {
+    this.music.setPlay(id);
   },
 
   PauseMusic () {

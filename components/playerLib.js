@@ -49,7 +49,7 @@ class PLAYER {
     this.audioList= [];
     this.USBAutoDetect();
     this.vlc = null;
-    this.spawnCVLC();
+    this.startVLC();
     this.statusInterval = setInterval(() => this.status(), 1000);
   }
 
@@ -336,7 +336,7 @@ class PLAYER {
   }
 
   /* create cvlc server */
-  spawnCVLC () {
+  startVLC () {
     this.vlc = new VLC.Client({
       ip: "127.0.0.1",
       port: 8082,
@@ -376,6 +376,14 @@ class PLAYER {
       if (this.config.autoStart && this.AutoDetectUSB) this.MusicPlayList();
     }
 
+    /* playing from other player ? */
+    if (status.state === "playing" && status.information.category.meta.title !== this.MusicPlayerStatus.title) {
+      this.MusicPlayerStatus.connected = false;
+      this.MusicPlayerStatus.lastState = false;
+      this.send(this.MusicPlayerStatus);
+      return;
+    }
+
     if (status.state === "stopped") { // to do better
       if (this.MusicPlayerStatus.lastState) {
         if ((this.MusicPlayerStatus.id >= this.MusicPlayerStatus.idMax) && !this.config.loop && !this.config.random) {
@@ -394,6 +402,7 @@ class PLAYER {
       }
       return;
     }
+
     this.MusicPlayerStatus.connected = true;
     this.MusicPlayerStatus.lastState = true;
     this.MusicPlayerStatus.current = status.position;
@@ -402,7 +411,7 @@ class PLAYER {
     if (this.MusicPlayerStatus.pause) {
       this.sendSocketNotification("Music_Player_PAUSE");
     }
-    //console.log("--> status,", status)
+    // console.log("--> status,", status, status.information.category.meta.title)
     this.send(this.MusicPlayerStatus);
   }
 }

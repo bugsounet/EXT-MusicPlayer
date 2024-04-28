@@ -62,10 +62,14 @@ Module.register("EXT-MusicPlayer", {
     if (noti === "GA_READY") {
       if (sender.name === "MMM-GoogleAssistant") {
         this.sendSocketNotification("INIT", this.config);
-        this.ready = true;
         this.sendNotification("EXT_HELLO", this.name);
       }
     }
+    if (noti === "EXT_VLCSERVER-START") {
+      this.sendSocketNotification("START", this.config);
+      this.ready = true;
+    }
+
     if (!this.ready) return;
 
     switch(noti) {

@@ -16,6 +16,9 @@ module.exports = NodeHelper.create({
         console.log("[MUSIC] EXT-MusicPlayer Version:", require("./package.json").version, "rev:", require("./package.json").rev);
         this.initialize(payload);
         break;
+      case "START":
+        this.StartMusic();
+        break;
       /** Music module **/
       case "MUSIC_PLAY":
         this.PlayMusic(payload);
@@ -60,20 +63,7 @@ module.exports = NodeHelper.create({
       console.error("[MUSIC] Try to solve it with `npm run rebuild` in EXT-MusicPlayer directory");
       return;
     }
-    else {
-      console.log("[MUSIC] All needed @bugsounet library loaded !");
-    }
-    log("Starting Music module...");
-    try {
-      var callbacks= {
-        sendSocketNotification: (noti, params) => {
-          if (this.config.verbose) log(noti,params);
-          this.sendSocketNotification(noti, params);
-        }
-      };
-      this.music = new this.Lib.MusicPlayer(this.config, this.config.debug, callbacks);
-      this.music.start();
-    } catch (e) { console.log("[MUSIC]", e); } // testing
+    console.log("[MUSIC] All needed @bugsounet library loaded !");
   },
 
   /** Load require @busgounet library **/
@@ -103,6 +93,21 @@ module.exports = NodeHelper.create({
       });
       resolve(errors);
     });
+  },
+
+  /* Start and Init Music Player **/
+  StartMusic() {
+    log("Starting Music module...");
+    try {
+      var callbacks= {
+        sendSocketNotification: (noti, params) => {
+          if (this.config.verbose) log(noti,params);
+          this.sendSocketNotification(noti, params);
+        }
+      };
+      this.music = new this.Lib.MusicPlayer(this.config, this.config.debug, callbacks);
+      this.music.start();
+    } catch (e) { console.log("[MUSIC]", e); } // testing
   },
 
   /** Send function to @bugsounet/cvlcmusicplayer library **/

@@ -156,7 +156,7 @@ class PLAYER {
     return found;
   }
 
-  async MusicPlayList () {
+  MusicPlayList () {
     if (!this.audioList.length) {
       this.MusicPlayerStatus.idMax = 0;
       return console.log("[Music] No Music to Read");
@@ -337,50 +337,24 @@ class PLAYER {
 
   /* create cvlc server */
   spawnCVLC () {
-    const cvlcPassword = `EXT-MusicPlayer_v${require("../package.json").version}_${new Date(Date.now()).toISOString()}`;
-    const args = [
-      "-I http",
-      "--extraintf",
-      "http",
-      "--http-port",
-      8082,
-      "--http-host",
-      "localhost",
-      "--http-password",
-      cvlcPassword
-    ];
-    this.cvlcPlayer = spawn("cvlc",args);
-    this.cvlcPlayer.on("error", (err) => {
-      console.error("[MUSIC] [Server] Can't start CVLC Server! Reason:", err.message);
-      this.sendSocketNotification("ERROR", `Can't start CVLC Server! Reason: ${err.message}`);
-    });
-
-    this.cvlcPlayer.on("close", (code) => {
-      console.log(`[MUSIC] [Server] exited with code ${code}`);
-    });
-
     this.vlc = new VLC.Client({
-      ip: "localhost",
+      ip: "127.0.0.1",
       port: 8082,
-      password: cvlcPassword,
+      password: "EXT-VLCServer",
       log: this.config.debug
     });
   }
 
   async status () {
-    if (!this.cvlcPlayer.pid) {
-      log("[MUSIC] Server is not ready...");
-      return;
-    }
     const status = await this.vlc.status().catch(
       (err)=> {
         if (err.code === "ECONNREFUSED" || err.message.includes("Unauthorized")) {
           clearInterval(this.statusInterval);
-          console.error("[MUSIC] Can't start CVLC Client! Reason:", err.message);
-          this.sendSocketNotification("ERROR", `Can't start CVLC Client! Reason: ${err.message}`);
+          console.error("[MUSIC] Can't start VLC Client! Reason:", err.message);
+          this.sendSocketNotification("ERROR", `Can't start VLC Client! Reason: ${err.message}`);
         } else {
           console.error("[MUSIC]", err.message);
-          this.sendSocketNotification("ERROR", `CVLC Client error: ${err.message}`);
+          this.sendSocketNotification("ERROR", `VLC Client error: ${err.message}`);
         }
       }
     );

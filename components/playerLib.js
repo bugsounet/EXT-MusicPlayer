@@ -49,6 +49,7 @@ class PLAYER {
     this.audioList= [];
     this.USBAutoDetect();
     this.vlc = null;
+    this.warn = 0;
     this.startVLC();
     this.statusInterval = setInterval(() => this.status(), 1000);
   }
@@ -333,9 +334,12 @@ class PLAYER {
     const status = await this.vlc.status().catch(
       (err)=> {
         if (err.code === "ECONNREFUSED" || err.message.includes("Unauthorized")) {
-          clearInterval(this.statusInterval);
+          this.warn++;
           console.error("[MUSIC] Can't start VLC Client! Reason:", err.message);
-          this.sendSocketNotification("ERROR", `Can't start VLC Client! Reason: ${err.message}`);
+          if (this.warn > 5) {
+            clearInterval(this.statusInterval);
+            this.sendSocketNotification("ERROR", `Can't start VLC Client! Reason: ${err.message}`);
+          }
         } else {
           console.error("[MUSIC]", err.message);
           this.sendSocketNotification("ERROR", `VLC Client error: ${err.message}`);
@@ -346,6 +350,7 @@ class PLAYER {
     if (status) this.MusicPlayerStatus.ready = true;
     else {
       this.MusicPlayerStatus.ready = false;
+      this.warn = 0;
       return;
     }
 

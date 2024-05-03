@@ -190,7 +190,6 @@ class PLAYER {
       this.MusicPlayerStatus.current= 0;
       this.MusicPlayerStatus.file = this.audioList[this.MusicPlayerStatus.id];
       this.MusicPlayerStatus.filename = path.basename(this.MusicPlayerStatus.file);
-      this.MusicPlayerStatus.seed = Date.now();
       this.MusicPlayerStatus.device = this.AutoDetectUSB ? "USB" : "FOLDER";
 
       log(`Start playing: ${path.basename(this.MusicPlayerStatus.file)}`);
@@ -372,18 +371,18 @@ class PLAYER {
       } else {
         log("Playing");
         if (!this.MusicPlayerStatus.connected) {
-          /* first playing */
+          /* discover first playing of music */
           log("Set volume to", this.config.maxVolume);
           this.vlc.setVolumeRaw(this.config.maxVolume);
+          this.MusicPlayerStatus.seed = Date.now();
           let meta = status.information.category.meta;
           this.MusicPlayerStatus.title = meta.title ? meta.title : path.basename(this.MusicPlayerStatus.file);
           this.MusicPlayerStatus.artist = meta.artist ? meta.artist: "-";
           this.MusicPlayerStatus.date = meta.date ? meta.date : "-";
           if (meta.artwork_url) {
             let file = meta.artwork_url.replace("file://", "");
-            let fileName = path.basename(file);
-            fs.copyFileSync(file, `${this.config.modulePath}/tmp/Music/${fileName}`);
-            this.MusicPlayerStatus.cover = fileName;
+            this.MusicPlayerStatus.cover = path.basename(file);
+            fs.copyFileSync(file, `${this.config.modulePath}/cover/${this.MusicPlayerStatus.cover}`);
           } else {
             this.MusicPlayerStatus.cover = null;
           }
@@ -405,6 +404,8 @@ class PLAYER {
           this.MusicPlayerStatus.lastState = false;
         } else {
           log("Playing Next");
+          this.MusicPlayerStatus.connected = true;
+          this.MusicPlayerStatus.lastState = true;
           this.setNext();
         }
       } else {

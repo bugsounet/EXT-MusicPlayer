@@ -188,7 +188,7 @@ class PLAYER {
       this.MusicPlayerStatus.connected = false;
       this.MusicPlayerStatus.current= 0;
       this.MusicPlayerStatus.file = this.audioList[this.MusicPlayerStatus.id];
-      this.MusicPlayerStatus.filename = path.basename(this.MusicPlayerStatus.file)
+      this.MusicPlayerStatus.filename = path.basename(this.MusicPlayerStatus.file);
       this.MusicPlayerStatus.seed = Date.now();
       this.MusicPlayerStatus.device= this.AutoDetectUSB ? "USB" : "FOLDER";
 
@@ -378,7 +378,6 @@ class PLAYER {
 
     /* playing from other player ? */
     if (status.state === "playing" && status.information.category.meta.filename !== this.MusicPlayerStatus.filename) {
-      console.log(status.information, this.MusicPlayerStatus.title)
       log("Not played by EXT-MusicPlayer");
       this.MusicPlayerStatus.connected = false;
       this.MusicPlayerStatus.lastState = false;

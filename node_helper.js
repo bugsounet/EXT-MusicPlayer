@@ -96,7 +96,7 @@ module.exports = NodeHelper.create({
   },
 
   /* Start and Init Music Player **/
-  StartMusic() {
+  StartMusic () {
     log("Starting Music module...");
     try {
       var callbacks= {

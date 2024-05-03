@@ -66,7 +66,7 @@ Module.register("EXT-MusicPlayer", {
       }
     }
     if (noti === "EXT_VLCSERVER-START") {
-      this.sendSocketNotification("START", this.config);
+      this.sendSocketNotification("START");
       this.ready = true;
     }
 

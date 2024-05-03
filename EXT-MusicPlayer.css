@@ -60,6 +60,7 @@
 }
 
 #EXT_MUSIC_COVER_IMAGE {
+  object-fit: cover;
   width:100%;
   box-shadow:black 1px 1px 1px 1px;
   height:140px;
@@ -182,7 +183,7 @@ progress[value]#EXT_MUSIC_PROGRESS_BAR::-webkit-progress-bar {
 }
 
 #EXT_MUSIC .text {
-  width: inherit;
+  width: 80%;
   margin-right: 0.5em;
   white-space: nowrap;
   display:inline-block;

@@ -190,28 +190,12 @@ class PLAYER {
       this.MusicPlayerStatus.file = this.audioList[this.MusicPlayerStatus.id];
       this.MusicPlayerStatus.filename = path.basename(this.MusicPlayerStatus.file);
       this.MusicPlayerStatus.seed = Date.now();
-      this.MusicPlayerStatus.device= this.AutoDetectUSB ? "USB" : "FOLDER";
+      this.MusicPlayerStatus.device = this.AutoDetectUSB ? "USB" : "FOLDER";
 
       log(`Start playing: ${path.basename(this.MusicPlayerStatus.file)}`);
 
       await this.vlc.playFile(this.MusicPlayerStatus.file, { novideo: true, wait: true, timeout: 300 });
-      
-      const fileMeta = await this.vlc.meta();
-      this.MusicPlayerStatus.title= fileMeta.title ? fileMeta.title : path.basename(this.MusicPlayerStatus.file);
-      this.MusicPlayerStatus.artist= fileMeta.artist ? fileMeta.artist: "-";
-      this.MusicPlayerStatus.date= fileMeta.date ? fileMeta.date : "-";
-      try {
-        if (fileMeta.artwork_url) {
-          let file = fileMeta.artwork_url.replace("file://", "");
-          let fileName= path.basename(file);
-          fs.copyFileSync(file, `${this.config.modulePath}/tmp/Music/${fileName}`);
-          this.MusicPlayerStatus.cover = fileName;
-        } else {
-          this.MusicPlayerStatus.cover = null;
-        }
-      } catch (err) { 
-        this.MusicPlayerStatus.cover = null;
-      }
+
     } catch (error) {
       console.error("[MUSIC] Music Player Error:", error.message);
       this.sendSocketNotification("WARN", error.message);
@@ -359,7 +343,6 @@ class PLAYER {
       }
     );
 
-
     if (status) this.MusicPlayerStatus.ready = true;
     else {
       this.MusicPlayerStatus.ready = false;
@@ -376,16 +359,38 @@ class PLAYER {
       if (this.config.autoStart && this.AutoDetectUSB) this.MusicPlayList();
     }
 
-    /* playing from other player ? */
-    if (status.state === "playing" && status.information.category.meta.filename !== this.MusicPlayerStatus.filename) {
-      log("Not played by EXT-MusicPlayer");
-      this.MusicPlayerStatus.connected = false;
-      this.MusicPlayerStatus.lastState = false;
-      this.send(this.MusicPlayerStatus);
-      return;
+    if (status.state === "playing") {
+      if (status.information.category.meta.filename !== this.MusicPlayerStatus.filename) {
+        log("Not played by EXT-MusicPlayer");
+        this.MusicPlayerStatus.connected = false;
+        this.MusicPlayerStatus.lastState = false;
+      } else {
+        log("Playing");
+        if (!this.MusicPlayerStatus.connected) {
+          /* first playing */
+          log("Set volume to", this.config.maxVolume);
+          this.vlc.setVolumeRaw(this.config.maxVolume);
+          let meta = status.information.category.meta;
+          this.MusicPlayerStatus.title = meta.title ? meta.title : path.basename(this.MusicPlayerStatus.file);
+          this.MusicPlayerStatus.artist = meta.artist ? meta.artist: "-";
+          this.MusicPlayerStatus.date = meta.date ? meta.date : "-";
+          if (meta.artwork_url) {
+            let file = meta.artwork_url.replace("file://", "");
+            let fileName = path.basename(file);
+            fs.copyFileSync(file, `${this.config.modulePath}/tmp/Music/${fileName}`);
+            this.MusicPlayerStatus.cover = fileName;
+          } else {
+            this.MusicPlayerStatus.cover = null;
+          }
+        }
+        this.MusicPlayerStatus.connected = true;
+        this.MusicPlayerStatus.lastState = true;
+        this.MusicPlayerStatus.pause = false;
+        this.MusicPlayerStatus.current = status.position;
+        this.MusicPlayerStatus.volume = (parseInt(status.volume)*100)/256;
+      }
     }
-
-    if (status.state === "stopped") { // to do better
+    else if (status.state === "stopped") { // to do better
       if (this.MusicPlayerStatus.lastState) {
         if ((this.MusicPlayerStatus.id >= this.MusicPlayerStatus.idMax) && !this.config.loop && !this.config.random) {
           /* end of playlist --> no loop */
@@ -393,35 +398,24 @@ class PLAYER {
           this.MusicPlayerStatus.id = 0;
           this.MusicPlayerStatus.connected = false;
           this.MusicPlayerStatus.lastState = false;
-          this.send(this.MusicPlayerStatus);
-          return;
+        } else {
+          log("Playing Next");
+          this.setNext();
         }
-        log("Playing Next");
-        this.setNext();
       } else {
         log("Stopped");
         this.MusicPlayerStatus.connected = false;
         this.MusicPlayerStatus.lastState = false;
-        this.send(this.MusicPlayerStatus);
       }
-      return;
     }
-
-    if (!this.MusicPlayerStatus.connected) {
-      log("Set volume to", this.config.maxVolume);
-      this.vlc.setVolumeRaw(this.config.maxVolume);
+    else if (status.state === "paused") {
+      if (this.MusicPlayerStatus.lastState) {
+        log("Paused");
+        this.MusicPlayerStatus.pause = true;
+        this.sendSocketNotification("Music_Player_PAUSE");
+      }
     }
-
-    log("Playing");
-    this.MusicPlayerStatus.connected = true;
-    this.MusicPlayerStatus.lastState = true;
-    this.MusicPlayerStatus.current = status.position;
-    this.MusicPlayerStatus.volume = (parseInt(status.volume)*100)/256;
-    this.MusicPlayerStatus.pause = status.state === "paused";
-    if (this.MusicPlayerStatus.pause) {
-      this.sendSocketNotification("Music_Player_PAUSE");
-    }
-    // console.log("--> status,", status, status.information.category.meta.title)
+    //log("Status:", status.state, status.information)
     this.send(this.MusicPlayerStatus);
   }
 }

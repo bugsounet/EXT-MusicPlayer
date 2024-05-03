@@ -178,6 +178,7 @@ class PLAYER {
 
   /** Music Player **/
   async MusicPlayer () {
+    this.sendSocketNotification("WILL_PLAYING");
     try {
       if (this.config.random) {
         let randomId = await this.getRandomInt(this.audioList.length);

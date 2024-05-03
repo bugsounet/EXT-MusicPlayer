@@ -37,6 +37,7 @@ Module.register("EXT-MusicPlayer", {
     this.ready = false;
     this.Music = new Music(this.config);
     this.random = this.config.random;
+    this.canStop = true;
   },
 
   getScripts () {
@@ -85,9 +86,14 @@ Module.register("EXT-MusicPlayer", {
       case "ASSISTANT_STANDBY":
         this.music.assistantSpeak= false;
         break;
+      case "EXT_VLCServer-WILL_PLAYING":
+        this.canStop = false;
+        break;
       case "EXT_STOP":
       case "EXT_MUSIC-STOP":
-        this.MusicCommand("STOP");
+        if (this.canStop) {
+          this.MusicCommand("STOP");
+        }
         break;
       case "EXT_MUSIC-VOLUME_MIN":
         if (!this.music.connected) return;
@@ -144,6 +150,7 @@ Module.register("EXT-MusicPlayer", {
           if (!payload.pause) this.Music.setPlay();
         } else {
           if (this.music.connected) {
+            this.canStop = true;
             this.music.connected = false;
             this.sendNotification("EXT_MUSIC-DISCONNECTED");
           }
@@ -174,6 +181,9 @@ Module.register("EXT-MusicPlayer", {
           message: payload,
           timer: 10000
         });
+        break;
+      case "WILL_PLAYING":
+        this.sendNotification("EXT_VLCServer-WILL_PLAYING");
         break;
     }
   },

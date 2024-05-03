@@ -346,10 +346,11 @@ class PLAYER {
       }
     );
 
-    if (status) this.MusicPlayerStatus.ready = true;
-    else {
-      this.MusicPlayerStatus.ready = false;
+    if (status) {
+      this.MusicPlayerStatus.ready = true;
       this.warn = 0;
+    } else {
+      this.MusicPlayerStatus.ready = false;
       return;
     }
 

@@ -187,7 +187,8 @@ class PLAYER {
       // make structure
       this.MusicPlayerStatus.connected = false;
       this.MusicPlayerStatus.current= 0;
-      this.MusicPlayerStatus.file= this.audioList[this.MusicPlayerStatus.id];
+      this.MusicPlayerStatus.file = this.audioList[this.MusicPlayerStatus.id];
+      this.MusicPlayerStatus.filename = path.basename(this.MusicPlayerStatus.file)
       this.MusicPlayerStatus.seed = Date.now();
       this.MusicPlayerStatus.device= this.AutoDetectUSB ? "USB" : "FOLDER";
 
@@ -231,7 +232,7 @@ class PLAYER {
   }
 
   setPause () {
-    if (this.MusicPlayerStatus.ready) {
+    if (this.MusicPlayerStatus.ready && this.MusicPlayerStatus.connected) {
       if (this.MusicPlayerStatus.pause) {
         log("Resume Paused");
         this.vlc.play();
@@ -268,7 +269,7 @@ class PLAYER {
   }
 
   setStop () {
-    if (this.MusicPlayerStatus.ready) {
+    if (this.MusicPlayerStatus.ready && this.MusicPlayerStatus.connected) {
       log("Stop");
       this.vlc.stop();
       this.MusicPlayerStatus.lastState = false;
@@ -276,7 +277,7 @@ class PLAYER {
   }
 
   setNext () {
-    if (this.MusicPlayerStatus.ready) {
+    if (this.MusicPlayerStatus.ready && this.MusicPlayerStatus.connected) {
       if (this.config.random) this.MusicPlayer();
       else {
         log("Next");
@@ -288,7 +289,7 @@ class PLAYER {
   }
 
   setPrevious () {
-    if (this.MusicPlayerStatus.ready) {
+    if (this.MusicPlayerStatus.ready && this.MusicPlayerStatus.connected) {
       if (this.config.random) this.MusicPlayer();
       else {
         log("Previous");
@@ -300,7 +301,7 @@ class PLAYER {
   }
 
   setVolume (volume) { // Warn must be 0-256
-    if (this.MusicPlayerStatus.ready) {
+    if (this.MusicPlayerStatus.ready && this.MusicPlayerStatus.connected) {
       log(`Set Volume ${volume}`);
       this.vlc.setVolumeRaw(volume);
     }
@@ -335,7 +336,6 @@ class PLAYER {
     return Math.floor(Math.random() * max);
   }
 
-  /* create cvlc server */
   startVLC () {
     this.vlc = new VLC.Client({
       ip: "127.0.0.1",
@@ -359,6 +359,7 @@ class PLAYER {
       }
     );
 
+
     if (status) this.MusicPlayerStatus.ready = true;
     else {
       this.MusicPlayerStatus.ready = false;
@@ -367,7 +368,6 @@ class PLAYER {
 
     if (this.MusicPlayerStatus.justStarted) {
       this.MusicPlayerStatus.justStarted = false;
-      this.setVolume(this.config.maxVolume);
       console.log("[MUSIC] Player Ready!");
     }
 
@@ -377,7 +377,9 @@ class PLAYER {
     }
 
     /* playing from other player ? */
-    if (status.state === "playing" && status.information.category.meta.title !== this.MusicPlayerStatus.title) {
+    if (status.state === "playing" && status.information.category.meta.filename !== this.MusicPlayerStatus.filename) {
+      console.log(status.information, this.MusicPlayerStatus.title)
+      log("Not played by EXT-MusicPlayer");
       this.MusicPlayerStatus.connected = false;
       this.MusicPlayerStatus.lastState = false;
       this.send(this.MusicPlayerStatus);
@@ -388,14 +390,17 @@ class PLAYER {
       if (this.MusicPlayerStatus.lastState) {
         if ((this.MusicPlayerStatus.id >= this.MusicPlayerStatus.idMax) && !this.config.loop && !this.config.random) {
           /* end of playlist --> no loop */
+          log("Stopped (no loop)");
           this.MusicPlayerStatus.id = 0;
           this.MusicPlayerStatus.connected = false;
           this.MusicPlayerStatus.lastState = false;
           this.send(this.MusicPlayerStatus);
           return;
         }
+        log("Playing Next");
         this.setNext();
       } else {
+        log("Stopped");
         this.MusicPlayerStatus.connected = false;
         this.MusicPlayerStatus.lastState = false;
         this.send(this.MusicPlayerStatus);
@@ -403,6 +408,12 @@ class PLAYER {
       return;
     }
 
+    if (!this.MusicPlayerStatus.connected) {
+      log("Set volume to", this.config.maxVolume);
+      this.vlc.setVolumeRaw(this.config.maxVolume);
+    }
+
+    log("Playing");
     this.MusicPlayerStatus.connected = true;
     this.MusicPlayerStatus.lastState = true;
     this.MusicPlayerStatus.current = status.position;

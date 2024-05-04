@@ -50,8 +50,8 @@ class PLAYER {
     this.USBAutoDetect();
     this.vlc = null;
     this.warn = 0;
+    this.statusInterval = null;
     this.startVLC();
-    this.statusInterval = setInterval(() => this.status(), 1000);
   }
 
   async init () {
@@ -75,6 +75,11 @@ class PLAYER {
       lastState: false
     };
     this.audioList= [];
+  }
+
+  pulse () {
+    log("Launch pulse");
+    this.statusInterval = setInterval(() => this.status(), 1000);
   }
 
   async start () {
@@ -178,6 +183,7 @@ class PLAYER {
 
   /** Music Player **/
   async MusicPlayer () {
+    clearTimeout(this.statusInterval);
     this.sendSocketNotification("WILL_PLAYING");
     try {
       if (this.config.random) {
@@ -196,6 +202,7 @@ class PLAYER {
       log(`Start playing: ${path.basename(this.MusicPlayerStatus.file)}`);
 
       await this.vlc.playFile(this.MusicPlayerStatus.file, { novideo: true, wait: true, timeout: 300 });
+      this.pulse();
 
     } catch (error) {
       console.error("[MUSIC] Music Player Error:", error.message);
@@ -229,27 +236,25 @@ class PLAYER {
   }
 
   setPlay (id) {
-    if (this.MusicPlayerStatus.ready) {
-      const TrackNumber = parseInt(id);
-      if (TrackNumber >= 0) {
-        if (TrackNumber > this.MusicPlayerStatus.idMax) {
-          console.error(`[MUSIC] Track not found: ${TrackNumber}`);
-          this.sendSocketNotification("WARN", `Track not found: ${TrackNumber}`);
-        } else {
-          log(`Search Track: ${TrackNumber}`);
-          this.MusicPlayerStatus.id = TrackNumber;
-          this.MusicPlayer();
-        }
-        return;
-      }
-      if (this.MusicPlayerStatus.pause) {
-        log("Resume Play");
-        this.vlc.play();
+    const TrackNumber = parseInt(id);
+    if (TrackNumber >= 0) {
+      if (TrackNumber > this.MusicPlayerStatus.idMax) {
+        console.error(`[MUSIC] Track not found: ${TrackNumber}`);
+        this.sendSocketNotification("WARN", `Track not found: ${TrackNumber}`);
       } else {
-        log("Play");
+        log(`Search Track: ${TrackNumber}`);
+        this.MusicPlayerStatus.id = TrackNumber;
         this.MusicPlayer();
-        this.MusicPlayerStatus.pause= false;
       }
+      return;
+    }
+    if (this.MusicPlayerStatus.pause) {
+      log("Resume Play");
+      this.vlc.play();
+    } else {
+      log("Play");
+      this.MusicPlayer();
+      this.MusicPlayerStatus.pause= false;
     }
   }
 
@@ -370,6 +375,7 @@ class PLAYER {
         log("Not played by EXT-MusicPlayer");
         this.MusicPlayerStatus.connected = false;
         this.MusicPlayerStatus.lastState = false;
+        clearTimeout(this.statusInterval);
       } else {
         log("Playing");
         if (!this.MusicPlayerStatus.connected) {
@@ -414,6 +420,7 @@ class PLAYER {
         log("Stopped");
         this.MusicPlayerStatus.connected = false;
         this.MusicPlayerStatus.lastState = false;
+        clearTimeout(this.statusInterval);
       }
     }
     else if (status.state === "paused") {

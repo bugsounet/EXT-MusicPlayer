@@ -147,7 +147,8 @@ Module.register("EXT-MusicPlayer", {
             this.music.connected = true;
             this.sendNotification("EXT_MUSIC-CONNECTED");
           }
-          if (!payload.pause) this.Music.setPlay();
+          if (payload.pause) this.Music.setPause();
+          else this.Music.setPlay();
         } else {
           if (this.music.connected) {
             this.canStop = true;
@@ -156,9 +157,6 @@ Module.register("EXT-MusicPlayer", {
           }
         }
         this.Music.updateSongInfo(payload);
-        break;
-      case "Music_Player_PAUSE":
-        this.Music.setPause();
         break;
       case "WARNING":
         this.sendNotification("EXT_ALERT", {

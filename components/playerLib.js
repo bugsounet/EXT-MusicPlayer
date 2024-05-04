@@ -427,7 +427,6 @@ class PLAYER {
       if (this.MusicPlayerStatus.lastState) {
         log("Paused");
         this.MusicPlayerStatus.pause = true;
-        this.sendSocketNotification("Music_Player_PAUSE");
       }
     }
     //log("Status:", status.state, status.information)

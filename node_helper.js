@@ -8,6 +8,7 @@ var log = (...args) => { /* do nothing */ };
 module.exports = NodeHelper.create({
   start () {
     this.Lib= {};
+    this.music = null;
   },
 
   socketNotificationReceived (noti, payload) {
@@ -112,48 +113,84 @@ module.exports = NodeHelper.create({
 
   /** Send function to @bugsounet/cvlcmusicplayer library **/
   StopMusic () {
-    if (this.music) {
-      this.music.setStop();
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
     }
+    this.music.setStop();
+
   },
 
   PlayMusic (id) {
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
+    }
     this.music.setPlay(id);
   },
 
   PauseMusic () {
-    if (this.music) {
-      this.music.setPause();
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
     }
+    this.music.setPause();
   },
 
   PreviousMusic () {
-    if (this.music) {
-      this.music.setPrevious();
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
     }
+    this.music.setPrevious();
   },
 
   NextMusic () {
-    if (this.music) {
-      this.music.setNext();
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
     }
+    this.music.setNext();
   },
 
   VolumeNewMax (max) {
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
+    }
     this.music.setNewMax(this.config.maxVolume);
   },
 
   VolumeMusic (volume) {
-    if (this.music) {
-      this.music.setVolume(volume);
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
     }
+    this.music.setVolume(volume);
   },
 
   RebuildMusic () {
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
+    }
     this.music.rebuild();
   },
 
   SwitchMusic () {
+    if (!this.music) {
+      console.error("[MUSIC] VLC Server not Started!");
+      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      return;
+    }
     this.music.setSwitch();
   }
 });

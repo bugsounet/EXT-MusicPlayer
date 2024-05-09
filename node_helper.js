@@ -115,7 +115,7 @@ module.exports = NodeHelper.create({
   StopMusic () {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setStop();
@@ -125,7 +125,7 @@ module.exports = NodeHelper.create({
   PlayMusic (id) {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setPlay(id);
@@ -134,7 +134,7 @@ module.exports = NodeHelper.create({
   PauseMusic () {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setPause();
@@ -143,7 +143,7 @@ module.exports = NodeHelper.create({
   PreviousMusic () {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setPrevious();
@@ -152,7 +152,7 @@ module.exports = NodeHelper.create({
   NextMusic () {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setNext();
@@ -161,7 +161,7 @@ module.exports = NodeHelper.create({
   VolumeNewMax (max) {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setNewMax(this.config.maxVolume);
@@ -170,7 +170,7 @@ module.exports = NodeHelper.create({
   VolumeMusic (volume) {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setVolume(volume);
@@ -179,7 +179,7 @@ module.exports = NodeHelper.create({
   RebuildMusic () {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.rebuild();
@@ -188,7 +188,7 @@ module.exports = NodeHelper.create({
   SwitchMusic () {
     if (!this.music) {
       console.error("[MUSIC] VLC Server not Started!");
-      this.sendSocketNotification("ERROR", "VLC Server not Started!")
+      this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
     this.music.setSwitch();

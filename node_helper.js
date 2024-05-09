@@ -14,7 +14,7 @@ module.exports = NodeHelper.create({
   socketNotificationReceived (noti, payload) {
     switch (noti) {
       case "INIT":
-        console.log("[MUSIC] EXT-MusicPlayer Version:", require("./package.json").version, "rev:", require("./package.json").rev);
+        console.log(`[MUSIC] EXT-MusicPlayer Version: ${require("./package.json").version} rev: ${require("./package.json").rev}`);
         this.initialize(payload);
         break;
       case "START":
@@ -60,7 +60,7 @@ module.exports = NodeHelper.create({
     if (this.config.debug) log = (...args) => { console.log("[MUSIC]", ...args); };
     let bugsounet = await this.loadBugsounetLibrary();
     if (bugsounet) {
-      console.error("[MUSIC] Warning:", bugsounet, "@bugsounet library not loaded !");
+      console.error(`[MUSIC] Warning: ${bugsounet} @bugsounet library not loaded !`);
       console.error("[MUSIC] Try to solve it with `npm run rebuild` in EXT-MusicPlayer directory");
       return;
     }
@@ -86,7 +86,7 @@ module.exports = NodeHelper.create({
               log(`Loaded ${libraryToLoad}`);
             }
           } catch (e) {
-            console.error("[MUSIC]", libraryToLoad, "Loading error!" , e);
+            console.error(`[MUSIC] ${libraryToLoad} Loading error!`, e);
             this.sendSocketNotification("WARNING" , { message: "LibraryError", values: libraryToLoad });
             errors++;
           }
@@ -108,7 +108,7 @@ module.exports = NodeHelper.create({
       };
       this.music = new this.Lib.MusicPlayer(this.config, this.config.debug, callbacks);
       this.music.start();
-    } catch (e) { console.log("[MUSIC]", e); } // testing
+    } catch (e) { console.error("[MUSIC]", e); } // testing
   },
 
   /** Send function to @bugsounet/cvlcmusicplayer library **/

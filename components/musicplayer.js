@@ -190,7 +190,7 @@ class Music {
     if (cover_img.src.indexOf(img_url) === -1) {
       const back = document.getElementById("EXT_MUSIC_BACKGROUND");
       back.classList.remove("fade-in");
-      let backOffSet = cover_img.offsetWidth;
+      let backOffSet = back.offsetWidth;
       back.classList.add("fade-in");
       back.style.backgroundImage = `url(${img_url})`;
 

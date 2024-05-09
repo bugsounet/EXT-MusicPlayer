@@ -205,7 +205,7 @@ class PLAYER {
       this.pulse();
 
     } catch (error) {
-      console.error("[MUSIC] Music Player Error:", error.message);
+      console.error(`[MUSIC] Music Player Error: ${error.message}`);
       this.sendSocketNotification("WARN", error.message);
     }
   }
@@ -340,13 +340,13 @@ class PLAYER {
       (err)=> {
         if (err.code === "ECONNREFUSED" || err.message.includes("Unauthorized")) {
           this.warn++;
-          console.error("[MUSIC] Can't start VLC Client! Reason:", err.message);
+          console.error(`[MUSIC] Can't start VLC Client! Reason: ${err.message}`);
           if (this.warn > 5) {
-            clearInterval(this.statusInterval);
+            clearTimeout(this.statusInterval);
             this.sendSocketNotification("ERROR", `Can't start VLC Client! Reason: ${err.message}`);
-          }
+          } else console.warn(`[MUSIC] Wait for response... (${this.warn}/5)`);
         } else {
-          console.error("[MUSIC]", err.message);
+          console.error(`[MUSIC] ${err.message}`);
           this.sendSocketNotification("ERROR", `VLC Client error: ${err.message}`);
         }
       }
@@ -380,13 +380,13 @@ class PLAYER {
         log("Playing");
         if (!this.MusicPlayerStatus.connected) {
           /* discover first playing of music */
-          log("Set volume to", this.config.maxVolume);
+          log(`Set volume to ${this.config.maxVolume}`);
           this.vlc.setVolumeRaw(this.config.maxVolume);
           this.MusicPlayerStatus.seed = Date.now();
           let meta = status.information.category.meta;
-          this.MusicPlayerStatus.title = meta.title ? meta.title : path.basename(this.MusicPlayerStatus.file);
-          this.MusicPlayerStatus.artist = meta.artist ? meta.artist: "-";
-          this.MusicPlayerStatus.date = meta.date ? meta.date : "-";
+          this.MusicPlayerStatus.title = meta.title || path.basename(this.MusicPlayerStatus.file);
+          this.MusicPlayerStatus.artist = meta.artist || "-";
+          this.MusicPlayerStatus.date = meta.date || "-";
           if (meta.artwork_url) {
             let file = meta.artwork_url.replace("file://", "");
             this.MusicPlayerStatus.cover = path.basename(file);
@@ -402,7 +402,7 @@ class PLAYER {
         this.MusicPlayerStatus.volume = (parseInt(status.volume)*100)/256;
       }
     }
-    else if (status.state === "stopped") { // to do better
+    else if (status.state === "stopped") {
       if (this.MusicPlayerStatus.lastState) {
         if ((this.MusicPlayerStatus.id >= this.MusicPlayerStatus.idMax) && !this.config.loop && !this.config.random) {
           /* end of playlist --> no loop */

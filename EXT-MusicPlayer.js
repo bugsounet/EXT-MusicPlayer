@@ -144,6 +144,7 @@ Module.register("EXT-MusicPlayer", {
         if (payload.volume) this.music.currentVolume = payload.volume;
         if (payload.connected) {
           if (!this.music.connected) {
+            this.canStop = true;
             this.music.connected = true;
             this.sendNotification("EXT_MUSIC-CONNECTED");
           }

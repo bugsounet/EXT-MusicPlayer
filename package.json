@@ -36,7 +36,7 @@
   "dependencies": {
     "@electron/rebuild": "^3.6.0",
     "drivelist": "^12.0.2",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.21.2",
     "glob": "^10.3.12",
     "usb": "^2.12.1",
     "vlc-client": "^1.1.1"

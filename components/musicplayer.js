@@ -105,7 +105,7 @@ class Music {
   }
 
   getFAIconClass (iconType) {
-    return `infoicon ${  this.getFAIcon(iconType)}`;
+    return `infoicon ${this.getFAIcon(iconType)}`;
   }
 
   getEmptyTextHTMLElement () {
@@ -158,20 +158,6 @@ class Music {
   }
 
   updateSongInfo (playbackItem) {
-    /*
-     this.MusicPlayerStatus = {
-      connected: false,
-      current: 0,
-      duration: 0,
-      file: null,
-      title: "",
-      artist: "",
-      volume: 0,
-      seed: 0,
-      cover: null,
-      format: XXX
-    }
-    */
     if (!playbackItem) return;
 
     const sDom = document.getElementById("EXT_MUSIC");
@@ -184,25 +170,27 @@ class Music {
         this.show(1000, () => {}, { lockString: "EXT-MUSICPLAYER_LOCK" });
       }
     } else {
-      if (this.connected) {
-        if (this.debug) console.log("[MUSIC] Disconnected");
-        this.connected = false;
-        clearTimeout(this.hideTimer);
-        this.hide(1000, () => {}, { lockString: "EXT-MUSICPLAYER_LOCK" });
-        this.hideTimer = setTimeout(() => {
-          sDom.classList.add("inactive");
-        },1000);
+      if (!playbackItem.lastState) {
+        if (this.connected) {
+          if (this.debug) console.log("[MUSIC] Disconnected");
+          this.connected = false;
+          clearTimeout(this.hideTimer);
+          this.hide(1000, () => {}, { lockString: "EXT-MUSICPLAYER_LOCK" });
+          this.hideTimer = setTimeout(() => {
+            sDom.classList.add("inactive");
+          },1000);
+        }
+        return;
       }
-      return;
     }
     const cover_img = document.getElementById("EXT_MUSIC_COVER_IMAGE");
     var img_url;
-    if (playbackItem.cover) img_url = `/modules/EXT-MusicPlayer/tmp/Music/${playbackItem.cover }?seed=${ playbackItem.seed}`;
-    else img_url = "/modules/EXT-MusicPlayer/resources/music.jpg" +`?seed=${playbackItem.seed}`;
+    if (playbackItem.cover) img_url = `/modules/EXT-MusicPlayer/cover/${playbackItem.cover}?seed=${playbackItem.seed}`;
+    else img_url = `/modules/EXT-MusicPlayer/resources/music.jpg?seed=${playbackItem.seed}`;
     if (cover_img.src.indexOf(img_url) === -1) {
       const back = document.getElementById("EXT_MUSIC_BACKGROUND");
       back.classList.remove("fade-in");
-      let backOffSet = cover_img.offsetWidth;
+      let backOffSet = back.offsetWidth;
       back.classList.add("fade-in");
       back.style.backgroundImage = `url(${img_url})`;
 
@@ -227,7 +215,7 @@ class Music {
     deviceIcon.className= this.getDeviceIconClass(playbackItem.device);
     
     const USB = document.querySelector("#EXT_MUSIC_DEVICE .text");
-    USB.textContent = `${playbackItem.id+1}/${playbackItem.idMax+1 }`;
+    USB.textContent = `${playbackItem.id+1}/${playbackItem.idMax+1}`;
     this.updateVolume(playbackItem.volume);
     this.updateProgress(playbackItem.current);
   }

@@ -37,6 +37,7 @@ Module.register("EXT-MusicPlayer", {
     this.ready = false;
     this.Music = new Music(this.config);
     this.random = this.config.random;
+    this.canStop = true;
   },
 
   getScripts () {
@@ -62,10 +63,14 @@ Module.register("EXT-MusicPlayer", {
     if (noti === "GA_READY") {
       if (sender.name === "MMM-GoogleAssistant") {
         this.sendSocketNotification("INIT", this.config);
-        this.ready = true;
         this.sendNotification("EXT_HELLO", this.name);
       }
     }
+    if (noti === "EXT_VLCSERVER-START") {
+      this.sendSocketNotification("START");
+      this.ready = true;
+    }
+
     if (!this.ready) return;
 
     switch(noti) {
@@ -81,9 +86,14 @@ Module.register("EXT-MusicPlayer", {
       case "ASSISTANT_STANDBY":
         this.music.assistantSpeak= false;
         break;
+      case "EXT_VLCServer-WILL_PLAYING":
+        this.canStop = false;
+        break;
       case "EXT_STOP":
       case "EXT_MUSIC-STOP":
-        this.MusicCommand("STOP");
+        if (this.canStop) {
+          this.MusicCommand("STOP");
+        }
         break;
       case "EXT_MUSIC-VOLUME_MIN":
         if (!this.music.connected) return;
@@ -134,20 +144,20 @@ Module.register("EXT-MusicPlayer", {
         if (payload.volume) this.music.currentVolume = payload.volume;
         if (payload.connected) {
           if (!this.music.connected) {
+            this.canStop = true;
             this.music.connected = true;
             this.sendNotification("EXT_MUSIC-CONNECTED");
           }
-          if (!payload.pause) this.Music.setPlay();
+          if (payload.pause) this.Music.setPause();
+          else this.Music.setPlay();
         } else {
           if (this.music.connected) {
+            this.canStop = true;
             this.music.connected = false;
             this.sendNotification("EXT_MUSIC-DISCONNECTED");
           }
         }
         this.Music.updateSongInfo(payload);
-        break;
-      case "Music_Player_PAUSE":
-        this.Music.setPause();
         break;
       case "WARNING":
         this.sendNotification("EXT_ALERT", {
@@ -170,6 +180,9 @@ Module.register("EXT-MusicPlayer", {
           message: payload,
           timer: 10000
         });
+        break;
+      case "WILL_PLAYING":
+        this.sendNotification("EXT_VLCServer-WILL_PLAYING");
         break;
     }
   },

@@ -1,12 +1,12 @@
 {
   "name": "EXT-MusicPlayer",
-  "version": "1.5.2",
-  "rev": "240621",
+  "version": "1.6.0",
+  "rev": "240701",
   "description": "An embedded Music Player on MagicMirror.",
   "main": "EXT-MusicPlayer.js",
   "scripts": {
     "preinstall": "installer/preinstall.sh -d 'libudev-dev'",
-    "postinstall": "installer/postinstall.sh -r -m -b",
+    "postinstall": "installer/postinstall.sh -r -m",
     "update": "installer/update.sh",
     "rebuild": "installer/rebuild.sh",
     "reset": "git reset --hard",
@@ -26,13 +26,16 @@
   "author": "bugsounet",
   "license": "MIT",
   "bugs": {
-    "url": "https://forum.bugsounet.fr"
+    "url": "https://github.com/bugsounet/EXT-MusicPlayer/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/bugsounet/EXT-MusicPlayer"
   },
   "homepage": "https://wiki.bugsounet.fr/en/EXT-MusicPlayer",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@electron/rebuild": "^3.6.0",
     "drivelist": "^12.0.2",
@@ -43,7 +46,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
-    "@stylistic/eslint-plugin": "1.8.1",
+    "@stylistic/eslint-plugin": "^1.8.1",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1"
   }

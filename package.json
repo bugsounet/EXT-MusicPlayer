@@ -41,7 +41,7 @@
     "drivelist": "^12.0.2",
     "esbuild": "^0.23.1",
     "glob": "^10.4.5",
-    "usb": "^2.13.0",
+    "usb": "^2.14.0",
     "vlc-client": "^1.1.1"
   },
   "devDependencies": {

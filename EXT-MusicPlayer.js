@@ -160,7 +160,7 @@ Module.register("EXT-MusicPlayer", {
         this.Music.updateSongInfo(payload);
         break;
       case "WARNING":
-        this.sendNotification("EXT_ALERT", {
+        this.sendNotification("GA_ALERT", {
           type: "warning",
           message: `Error When Loading: ${payload.library}. Try to solve it with \`npm run rebuild\` in EXT-MusicPlayer folder`,
           timer: 10000
@@ -168,14 +168,14 @@ Module.register("EXT-MusicPlayer", {
         this.ready = false;
         break;
       case "ERROR":
-        this.sendNotification("EXT_ALERT", {
+        this.sendNotification("GA_ALERT", {
           type: "error",
           message: payload,
           timer: 10000
         });
         break;
       case "WARN":
-        this.sendNotification("EXT_ALERT", {
+        this.sendNotification("GA_ALERT", {
           type: "warning",
           message: payload,
           timer: 10000

@@ -40,7 +40,7 @@
     "@electron/rebuild": "^3.7.0",
     "drivelist": "^12.0.2",
     "esbuild": "^0.24.0",
-    "glob": "^10.4.5",
+    "glob": "^11.0.0",
     "usb": "^2.14.0",
     "vlc-client": "^1.1.1"
   },

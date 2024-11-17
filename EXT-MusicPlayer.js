@@ -4,6 +4,8 @@
  ** support: https://forum.bugsounet.fr
  **/
 
+/* global Music */
+
 Module.register("EXT-MusicPlayer", {
   defaults: {
     debug: false,
@@ -20,7 +22,7 @@ Module.register("EXT-MusicPlayer", {
 
   start () {
     this.initializeMusicVolumeVLC();
-    this.music= {
+    this.music = {
       connected: false,
       currentVolume: 0,
       minVolume: this.config.minVolume,
@@ -73,18 +75,18 @@ Module.register("EXT-MusicPlayer", {
 
     if (!this.ready) return;
 
-    switch(noti) {
+    switch (noti) {
       case "ASSISTANT_LISTEN":
       case "ASSISTANT_THINK":
       case "ASSISTANT_REPLY":
       case "ASSISTANT_CONTINUE":
       case "ASSISTANT_CONFIRMATION":
       case "ASSISTANT_ERROR":
-        this.music.assistantSpeak= true;
+        this.music.assistantSpeak = true;
         break;
       case "ASSISTANT_HOOK":
       case "ASSISTANT_STANDBY":
-        this.music.assistantSpeak= false;
+        this.music.assistantSpeak = false;
         break;
       case "EXT_VLCServer-WILL_PLAYING":
         this.canStop = false;
@@ -109,7 +111,7 @@ Module.register("EXT-MusicPlayer", {
         break;
       case "EXT_MUSIC-VOLUME_SET":
         if (isNaN(payload)) return console.log("ERROR MUSIC VOLUME", "Must be a number ! [0-100]", payload);
-        let volumeToSet = payload;
+        var volumeToSet = payload;
         if (payload > 100) volumeToSet = 100;
         if (payload < 0) volumeToSet = 0;
         this.music.targetValue = this.convertPercentToValue(volumeToSet);
@@ -138,7 +140,8 @@ Module.register("EXT-MusicPlayer", {
   },
 
   socketNotificationReceived (noti, payload) {
-    switch(noti) {
+    switch (noti) {
+
       /** Music Player **/
       case "Music_Player":
         if (payload.volume) this.music.currentVolume = payload.volume;
@@ -189,6 +192,7 @@ Module.register("EXT-MusicPlayer", {
 
   /** initialise Music volume control for VLC **/
   initializeMusicVolumeVLC () {
+
     /** convert volume **/
     try {
       let valueMin = null;
@@ -229,7 +233,6 @@ Module.register("EXT-MusicPlayer", {
   tbMusic (command, handler) {
     if (handler.args) {
       var args = handler.args.toLowerCase().split(" ");
-      var params = handler.args.split(" ");
       if (args[0] === "play") {
         handler.reply("TEXT", "Music PLAY");
         this.MusicCommand("PLAY");
@@ -276,7 +279,7 @@ Module.register("EXT-MusicPlayer", {
         let track = parseInt(args[0]);
         if (track > 0) {
           handler.reply("TEXT", `Start Playing id: ${track}`);
-          this.MusicCommand("PLAY", track-1);
+          this.MusicCommand("PLAY", track - 1);
         }
         else handler.reply("TEXT", "Track must be > 1");
       }
@@ -293,7 +296,7 @@ Module.register("EXT-MusicPlayer", {
   *volume*: Volume control, it need a value 0-100\n\
   *switch*: Switch between USB Key and Local Folder\n\
   *<track_number>*: play the track number\n\
-  ",{ parse_mode:"Markdown" });
+  ", { parse_mode: "Markdown" });
     }
   },
 
@@ -329,6 +332,6 @@ Module.register("EXT-MusicPlayer", {
 
   /** Convert percent to cvlc value **/
   convertPercentToValue (percent) {
-    return parseInt(((percent*256)/100).toFixed(0));
+    return parseInt(((percent * 256) / 100).toFixed(0));
   }
 });

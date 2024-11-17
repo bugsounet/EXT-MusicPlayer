@@ -1,7 +1,7 @@
 {
   "name": "EXT-MusicPlayer",
-  "version": "1.7.0",
-  "rev": "241028",
+  "version": "1.7.1",
+  "rev": "241118",
   "description": "An embedded Music Player on MagicMirror.",
   "main": "EXT-MusicPlayer.js",
   "scripts": {

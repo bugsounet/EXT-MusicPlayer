@@ -1,13 +1,12 @@
 "use strict";
 
-const exec = require("child_process").exec;
 var NodeHelper = require("node_helper");
 
-var log = (...args) => { /* do nothing */ };
+var log = () => { /* do nothing */ };
 
 module.exports = NodeHelper.create({
   start () {
-    this.Lib= {};
+    this.Lib = {};
     this.music = null;
   },
 
@@ -20,6 +19,7 @@ module.exports = NodeHelper.create({
       case "START":
         this.StartMusic();
         break;
+
       /** Music module **/
       case "MUSIC_PLAY":
         this.PlayMusic(payload);
@@ -37,8 +37,9 @@ module.exports = NodeHelper.create({
         this.PreviousMusic();
         break;
       case "MUSIC_VOLUME_TARGET":
-        this.config.maxVolume = payload; // informe helper
         this.VolumeNewMax(payload);
+        this.VolumeMusic(payload);
+        break;
       case "MUSIC_VOLUME":
         this.VolumeMusic(payload);
         break;
@@ -70,9 +71,7 @@ module.exports = NodeHelper.create({
   /** Load require @busgounet library **/
   /** It will not crash MM (black screen) **/
   loadBugsounetLibrary () {
-    let libraries= [
-      { "./components/playerLib.js": "MusicPlayer" }
-    ];
+    let libraries = [{ "./components/playerLib.js": "MusicPlayer" }];
     let errors = 0;
     return new Promise((resolve) => {
       libraries.forEach((library) => {
@@ -87,7 +86,7 @@ module.exports = NodeHelper.create({
             }
           } catch (e) {
             console.error(`[MUSIC] ${libraryToLoad} Loading error!`, e);
-            this.sendSocketNotification("WARNING" , { message: "LibraryError", values: libraryToLoad });
+            this.sendSocketNotification("WARNING", { message: "LibraryError", values: libraryToLoad });
             errors++;
           }
         }
@@ -100,9 +99,9 @@ module.exports = NodeHelper.create({
   StartMusic () {
     log("Starting Music module...");
     try {
-      var callbacks= {
+      var callbacks = {
         sendSocketNotification: (noti, params) => {
-          if (this.config.verbose) log(noti,params);
+          if (this.config.verbose) log(noti, params);
           this.sendSocketNotification(noti, params);
         }
       };
@@ -164,7 +163,8 @@ module.exports = NodeHelper.create({
       this.sendSocketNotification("ERROR", "VLC Server not Started!");
       return;
     }
-    this.music.setNewMax(this.config.maxVolume);
+    this.config.maxVolume = max; // inform helper
+    this.music.setNewMax(max);
   },
 
   VolumeMusic (volume) {

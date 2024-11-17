@@ -1,3 +1,4 @@
+/* eslint-disable-next-line */
 class Music {
   constructor (Config) {
     this.config = Config;
@@ -14,7 +15,7 @@ class Music {
   prepare () {
     var viewDom = document.createElement("div");
     viewDom.id = "EXT_MUSIC";
-    viewDom.className= "inactive";
+    viewDom.className = "inactive";
 
     viewDom.appendChild(this.getHTMLElementWithID("div", "EXT_MUSIC_BACKGROUND"));
 
@@ -178,7 +179,7 @@ class Music {
           this.hide(1000, () => {}, { lockString: "EXT-MUSICPLAYER_LOCK" });
           this.hideTimer = setTimeout(() => {
             sDom.classList.add("inactive");
-          },1000);
+          }, 1000);
         }
         return;
       }
@@ -190,12 +191,14 @@ class Music {
     if (cover_img.src.indexOf(img_url) === -1) {
       const back = document.getElementById("EXT_MUSIC_BACKGROUND");
       back.classList.remove("fade-in");
-      let backOffSet = back.offsetWidth;
+      /* eslint-disable-next-line */
+      let backOffSet = back.offsetWidth; // needed for no display buging
       back.classList.add("fade-in");
       back.style.backgroundImage = `url(${img_url})`;
 
       cover_img.classList.remove("fade-in");
-      let offset = cover_img.offsetWidth;
+      /* eslint-disable-next-line */
+      let offset = cover_img.offsetWidth; // needed for no display buging
       cover_img.classList.add("fade-in");
       cover_img.src = img_url;
     }
@@ -212,10 +215,10 @@ class Music {
     artist.textContent = artistName;
 
     const deviceIcon = document.getElementById("EXT_MUSIC_DEVICE_ICON");
-    deviceIcon.className= this.getDeviceIconClass(playbackItem.device);
-    
+    deviceIcon.className = this.getDeviceIconClass(playbackItem.device);
+
     const USB = document.querySelector("#EXT_MUSIC_DEVICE .text");
-    USB.textContent = `${playbackItem.id+1}/${playbackItem.idMax+1}`;
+    USB.textContent = `${playbackItem.id + 1}/${playbackItem.idMax + 1}`;
     this.updateVolume(playbackItem.volume);
     this.updateProgress(playbackItem.current);
   }
